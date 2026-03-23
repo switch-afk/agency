@@ -110,16 +110,14 @@
       <% if (attachments && attachments.length > 0) { %>
       <div class="flex flex-col gap-2 mb-4" id="att-list">
         <% attachments.forEach(function(att){ %>
-        <div class="flex items-center gap-3 p-3 rounded-sm" style="background:rgba(26,111,255,0.04);border:1px solid var(--dark-border);">
+        <div class="flex items-center gap-3 p-3 rounded-sm" id="att-row-<%= att.filename %>" style="background:rgba(26,111,255,0.04);border:1px solid var(--dark-border);">
           <div class="flex-1 min-w-0">
             <div class="font-mono text-xs text-slate-200 truncate"><%= att.name %></div>
             <div class="font-mono text-slate-600 mt-0.5" style="font-size:0.6rem;"><%= att.sizeStr %></div>
           </div>
-          <% if (att.isImg) { %>
-            <a href="/orders/<%= order.id %>/img/<%= att.filename %>" target="_blank" class="font-mono text-xs text-slate-400 hover:text-white flex-shrink-0">VIEW</a>
-            <span class="text-slate-600 text-xs">|</span>
+          <% if (isClient) { %>
+            <button onclick="removeAtt('<%= att.filename %>')" class="font-mono text-xs flex-shrink-0" style="background:none;border:1px solid rgba(255,34,68,0.4);color:#ff5566;padding:2px 8px;border-radius:2px;cursor:pointer;">REMOVE</button>
           <% } %>
-          <a href="/orders/<%= order.id %>/img/<%= att.filename %>" target="_blank" download="<%= att.name %>" class="font-mono text-xs flex-shrink-0" style="color:var(--blue-bright);">DOWNLOAD</a>
         </div>
         <% }); %>
       </div>
@@ -441,6 +439,21 @@ function showStat(el, msg, type) {
   var err = 'background:rgba(255,34,68,0.08);color:#ff5566;border:1px solid rgba(255,34,68,0.3);';
   el.style.cssText = (type === 'ok' ? ok : err);
   el.textContent = msg;
+}
+
+async function removeAtt(filename) {
+  if (!confirm('Remove this file?')) return;
+  try {
+    var r = await fetch('/orders/' + ORDER_ID + '/attachment/' + encodeURIComponent(filename) + '/delete', {method:'POST'});
+    var d = await r.json();
+    if (d.success) {
+      var row = document.getElementById('att-row-' + filename);
+      if (row) row.remove();
+      showToast('File removed');
+    } else {
+      showToast(d.error || 'Failed to remove');
+    }
+  } catch(e) { showToast('Network error'); }
 }
 </script>
 
