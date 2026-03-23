@@ -63,15 +63,17 @@ function canAccess(order, wallet) {
 function getOrderAttachments(orderId) {
   const dir = path.join(__dirname, '../data/attachments', orderId);
   if (!fs.existsSync(dir)) return [];
-  return fs.readdirSync(dir).map(fname => {
-    const stat = fs.statSync(path.join(dir, fname));
-    const bytes = stat.size;
-    const sizeStr = bytes < 1024 ? bytes + ' B'
-                  : bytes < 1048576 ? (bytes/1024).toFixed(1) + ' KB'
-                  : (bytes/1048576).toFixed(1) + ' MB';
-    const isImg = /\.(jpg|jpeg|png|gif|webp|svg|bmp|tiff)$/i.test(fname);
-    return { filename: fname, name: fname.replace(/^\d+_/, ''), sizeStr, isImg };
-  });
+  return fs.readdirSync(dir)
+    .filter(fname => !fname.startsWith('.') && fname !== '.gitkeep')
+    .map(fname => {
+      const stat = fs.statSync(path.join(dir, fname));
+      const bytes = stat.size;
+      const sizeStr = bytes < 1024 ? bytes + ' B'
+                    : bytes < 1048576 ? (bytes/1024).toFixed(1) + ' KB'
+                    : (bytes/1048576).toFixed(1) + ' MB';
+      const isImg = /\.(jpg|jpeg|png|gif|webp|svg|bmp|tiff|avif|heic|heif|webp)$/i.test(fname);
+      return { filename: fname, name: fname.replace(/^\d+_/, ''), sizeStr, isImg };
+    });
 }
 
 // ─── Order detail page ─────────────────────────────────────────
@@ -137,17 +139,18 @@ router.post('/:id/upload-doc', (req, res, next) => {
   if (!uploadAny) return res.json({ success: false, error: 'File upload unavailable — run: npm install' });
   next();
 }, (req, res, next) => {
-  uploadAny.single('file')(req, res, err => {
-    if (err) return res.json({ success: false, error: err.code === 'LIMIT_FILE_SIZE' ? 'Max 20MB' : err.message });
+  uploadAny.array('files', 20)(req, res, err => {
+    if (err) return res.json({ success: false, error: err.code === 'LIMIT_FILE_SIZE' ? 'Max 20MB per file' : err.message });
     next();
   });
 }, (req, res) => {
   try {
-    if (!req.file) return res.json({ success: false, error: 'No file' });
+    if (!req.files || req.files.length === 0) return res.json({ success: false, error: 'No files received' });
     const order = orderStore.getById(req.params.id);
     if (!order) return res.json({ success: false, error: 'Order not found' });
     if (order.wallet !== req.session.walletAddress) return res.json({ success: false, error: 'Access denied' });
-    res.json({ success: true, filename: req.file.filename, name: req.file.originalname });
+    const saved = req.files.map(f => ({ filename: f.filename, name: f.originalname }));
+    res.json({ success: true, files: saved });
   } catch (err) { res.json({ success: false, error: err.message }); }
 });
 

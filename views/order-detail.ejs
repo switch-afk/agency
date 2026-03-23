@@ -7,7 +7,7 @@
 .ci{background:var(--dark-bg);border:1px solid var(--dark-border);color:#e8f0ff;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:0.875rem;outline:none;transition:border-color 0.2s;width:100%;}
 .ci:focus{border-color:var(--blue-core);}
 .ci::placeholder{color:#3a4a6a;}
-.dz{border:2px dashed var(--dark-border);border-radius:4px;padding:24px;text-align:center;cursor:pointer;transition:border-color 0.2s;}
+.dz{border:2px dashed var(--dark-border);border-radius:4px;padding:20px;text-align:center;cursor:pointer;transition:border-color 0.2s;}
 .dz:hover,.dz.over{border-color:var(--blue-core);}
 </style>
 
@@ -36,6 +36,7 @@
   <div class="grid md:grid-cols-3 gap-6">
   <div class="md:col-span-2 flex flex-col gap-5">
 
+    <!-- Services -->
     <div class="service-card rounded-sm p-5">
       <h3 class="font-mono text-xs tracking-widest text-slate-400 mb-4">SERVICES ORDERED</h3>
       <% order.items.forEach(function(item){ %>
@@ -50,6 +51,7 @@
       </div>
     </div>
 
+    <!-- Project Details (client) -->
     <% if (isClient) { %>
     <div class="service-card rounded-sm p-5">
       <div class="flex items-center justify-between mb-4">
@@ -74,15 +76,7 @@
         </div>
         <div>
           <label class="font-mono text-xs text-slate-500 block mb-2">DESCRIPTION *</label>
-          <textarea name="description" required rows="5" class="ci rounded-sm" style="resize:none;" placeholder="Describe what you want built..."><%= order.projectDetails ? order.projectDetails.description : '' %></textarea>
-        </div>
-        <div>
-          <label class="font-mono text-xs text-slate-500 block mb-2">ATTACH FILE (any type, max 20MB)</label>
-          <div class="dz" id="doc-dz" onclick="document.getElementById('doc-fi').click()" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="docDrop(event)">
-            <div class="font-mono text-xs text-slate-500">DRAG AND DROP OR CLICK TO BROWSE</div>
-            <div id="doc-fn" class="hidden mt-2 font-mono text-xs" style="color:var(--blue-bright);"></div>
-          </div>
-          <input type="file" id="doc-fi" class="hidden" onchange="setDocFile(this.files[0])" />
+          <textarea name="description" required rows="4" class="ci rounded-sm" style="resize:none;" placeholder="Describe what you want built..."><%= order.projectDetails ? order.projectDetails.description : '' %></textarea>
         </div>
         <div id="det-status" class="hidden font-mono text-xs p-3 rounded-sm"></div>
         <button type="submit" id="det-btn" class="btn-glow py-3 rounded-sm">SUBMIT PROJECT DETAILS</button>
@@ -90,6 +84,7 @@
     </div>
     <% } %>
 
+    <!-- Project Details (admin/dev read-only) -->
     <% if ((isAdmin||isDev) && order.projectDetails) { %>
     <div class="service-card rounded-sm p-5">
       <h3 class="font-mono text-xs tracking-widest text-slate-400 mb-4">PROJECT DETAILS</h3>
@@ -100,15 +95,20 @@
     </div>
     <% } %>
 
-    <% if (attachments && attachments.length > 0) { %>
+    <!-- Attachments + Upload (always visible to client/admin/dev) -->
     <div class="service-card rounded-sm p-5">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="font-mono text-xs tracking-widest text-slate-400">ATTACHMENTS (<%= attachments.length %>)</h3>
+        <h3 class="font-mono text-xs tracking-widest text-slate-400">
+          ATTACHMENTS<% if (attachments && attachments.length > 0) { %> (<%= attachments.length %>)<% } %>
+        </h3>
         <% if (isAdmin||isDev) { %>
           <a href="/orders/<%= order.id %>/attachments/zip" class="font-mono text-xs px-3 py-1 rounded-sm" style="border:1px solid var(--dark-border);color:var(--blue-bright);">ZIP ALL</a>
         <% } %>
       </div>
-      <div class="flex flex-col gap-2">
+
+      <!-- File list -->
+      <% if (attachments && attachments.length > 0) { %>
+      <div class="flex flex-col gap-2 mb-4" id="att-list">
         <% attachments.forEach(function(att){ %>
         <div class="flex items-center gap-3 p-3 rounded-sm" style="background:rgba(26,111,255,0.04);border:1px solid var(--dark-border);">
           <div class="flex-1 min-w-0">
@@ -116,17 +116,38 @@
             <div class="font-mono text-slate-600 mt-0.5" style="font-size:0.6rem;"><%= att.sizeStr %></div>
           </div>
           <% if (att.isImg) { %>
-            <a href="/orders/<%= order.id %>/img/<%= att.filename %>" target="_blank" class="font-mono text-xs text-slate-400 hover:text-white">VIEW</a>
+            <a href="/orders/<%= order.id %>/img/<%= att.filename %>" target="_blank" class="font-mono text-xs text-slate-400 hover:text-white flex-shrink-0">VIEW</a>
             <span class="text-slate-600 text-xs">|</span>
           <% } %>
-          <a href="/orders/<%= order.id %>/img/<%= att.filename %>" target="_blank" class="font-mono text-xs" style="color:var(--blue-bright);">DOWNLOAD</a>
+          <a href="/orders/<%= order.id %>/img/<%= att.filename %>" target="_blank" download="<%= att.name %>" class="font-mono text-xs flex-shrink-0" style="color:var(--blue-bright);">DOWNLOAD</a>
         </div>
         <% }); %>
       </div>
-    </div>
-    <% } %>
+      <% } else { %>
+      <div class="font-mono text-xs text-slate-600 mb-4">No files attached yet.</div>
+      <% } %>
 
-    <div class="service-card rounded-sm flex flex-col" style="height:540px;">
+      <!-- Multi-file upload (client only) -->
+      <% if (isClient) { %>
+      <div>
+        <div class="dz" id="att-dz"
+          onclick="document.getElementById('att-fi').click()"
+          ondragover="event.preventDefault();this.classList.add('over')"
+          ondragleave="this.classList.remove('over')"
+          ondrop="attDrop(event)">
+          <div class="font-mono text-xs text-slate-500">DRAG AND DROP OR CLICK TO ATTACH FILES</div>
+          <div class="font-mono text-slate-600 mt-1" style="font-size:0.6rem;">Any file type, max 20MB each, multiple files supported</div>
+        </div>
+        <input type="file" id="att-fi" multiple class="hidden" onchange="handleAttFiles(this.files)" />
+        <div id="att-queue" class="hidden flex flex-col gap-1 mt-2"></div>
+        <div id="att-status" class="hidden font-mono text-xs p-2 rounded-sm mt-2"></div>
+        <button id="att-btn" onclick="uploadAttachments()" class="hidden btn-glow w-full py-2 rounded-sm text-xs mt-2">UPLOAD FILES</button>
+      </div>
+      <% } %>
+    </div>
+
+    <!-- Chat (NO attach button) -->
+    <div class="service-card rounded-sm flex flex-col" style="height:520px;">
       <div class="p-4 border-b flex items-center justify-between" style="border-color:var(--dark-border);">
         <h3 class="font-mono text-xs tracking-widest text-slate-400">PROJECT CHAT</h3>
         <% if (order.developerName) { %>
@@ -150,14 +171,7 @@
               var align = isMe ? 'items-end' : 'items-start';
               var nr = isMe ? 'flex-row-reverse' : '';
               var t = new Date(msg.at).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-              var fn = '';
-              if (msg.filename) {
-                fn = (msg.fileName || msg.filename);
-                var idx = fn.indexOf('_');
-                if (idx > -1 && idx < 14) fn = fn.substring(idx + 1);
-              }
-              var ir = msg.filename ? ('/orders/' + order.id + '/img/' + msg.filename) : '';
-              var hasContent = (msg.filename && fn) || (msg.text && msg.text.length > 0);
+              var hasContent = msg.text && msg.text.length > 0;
             %>
             <% if (hasContent) { %>
             <div class="flex flex-col gap-1 <%= align %>">
@@ -165,31 +179,14 @@
                 <span style="color:#6a7a9a;font-family:monospace;"><%= msg.senderName %></span>
                 <span style="color:#2a3a5a;font-family:monospace;font-size:0.55rem;"><%= t %></span>
               </div>
-              <% if (msg.filename && fn) { %>
-                <div class="<%= rc %> chat-bubble" style="padding:8px 12px;">
-                  <div style="display:flex;align-items:center;gap:8px;">
-                    <span style="font-family:monospace;font-size:0.65rem;color:#6a7a9a;">[IMG]</span>
-                    <span style="font-family:monospace;font-size:0.75rem;color:#e8f0ff;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><%= fn %></span>
-                    <a href="<%= ir %>" download="<%= fn %>" style="font-family:monospace;font-size:0.7rem;color:var(--blue-bright);text-decoration:none;flex-shrink:0;background:rgba(26,111,255,0.12);border:1px solid rgba(26,111,255,0.4);padding:3px 10px;border-radius:2px;">DOWNLOAD</a>
-                  </div>
-                </div>
-              <% } else if (msg.text && msg.text.length > 0) { %>
-                <div class="<%= rc %> chat-bubble"><%= msg.text %></div>
-              <% } %>
+              <div class="<%= rc %> chat-bubble"><%= msg.text %></div>
             </div>
             <% } %>
           <% }); %>
         <% } %>
       </div>
 
-      <div id="file-bar" class="hidden px-3 pt-2 pb-1 flex items-center gap-2" style="border-top:1px solid var(--dark-border);background:rgba(26,111,255,0.05);">
-        <span style="color:var(--blue-bright);font-family:monospace;font-size:0.75rem;">[IMG]</span>
-        <span id="file-bar-name" class="font-mono text-xs text-slate-300 truncate flex-1"></span>
-        <button onclick="clearChatFile()" class="font-mono text-xs text-red-400 hover:text-red-300">REMOVE</button>
-      </div>
       <div class="p-3 flex gap-2 items-end" style="border-top:1px solid var(--dark-border);">
-        <button onclick="document.getElementById('chat-fi').click()" class="btn-outline px-3 py-2 rounded-sm flex-shrink-0 font-mono text-xs" title="Attach image">IMG</button>
-        <input type="file" id="chat-fi" accept="image/*" class="hidden" onchange="setChatFile(this.files[0])" />
         <textarea id="chat-in" rows="1" placeholder="Type a message..."
           class="ci rounded-sm flex-1" style="resize:none;min-height:40px;max-height:120px;"
           oninput="autoResize(this)"
@@ -200,6 +197,7 @@
 
   </div>
 
+  <!-- Sidebar -->
   <div class="flex flex-col gap-4">
     <% if (order.developerName) { %>
     <div class="service-card rounded-sm p-4">
@@ -263,8 +261,7 @@
 var ORDER_ID = '<%= order.id %>';
 var MY_WALLET = '<%= walletAddress %>';
 var lastId = <%= (messages && messages.length > 0) ? messages[messages.length-1].id : 0 %>;
-var chatFile = null;
-var docFile = null;
+var attFiles = [];
 
 function scrollChat() {
   var b = document.getElementById('chat-box');
@@ -277,77 +274,28 @@ function autoResize(el) {
   el.style.height = Math.min(el.scrollHeight, 120) + 'px';
 }
 
-function setChatFile(f) {
-  if (!f) return;
-  chatFile = f;
-  var bar = document.getElementById('file-bar');
-  bar.classList.remove('hidden');
-  bar.style.display = 'flex';
-  document.getElementById('file-bar-name').textContent = f.name;
-}
-
-function clearChatFile() {
-  chatFile = null;
-  document.getElementById('chat-fi').value = '';
-  var bar = document.getElementById('file-bar');
-  bar.classList.add('hidden');
-  bar.style.display = 'none';
-}
-
 function escapeHtml(s) {
-  return String(s)
-    .split('&').join('&amp;')
-    .split('<').join('&lt;')
-    .split('>').join('&gt;');
+  return String(s).split('&').join('&amp;').split('<').join('&lt;').split('>').join('&gt;');
 }
 
-function stripTimestamp(name) {
-  if (!name) return '';
-  var idx = name.indexOf('_');
-  if (idx > -1 && idx < 14) return name.substring(idx + 1);
-  return name;
-}
-
-function makeBubble(msg, rc) {
-  var fn = msg.filename ? stripTimestamp(msg.fileName || msg.filename) : '';
-  var ir = msg.filename ? ('/orders/' + ORDER_ID + '/img/' + msg.filename) : '';
-
-  if (msg.filename && fn) {
-    return '<div class="' + rc + ' chat-bubble" style="padding:8px 12px;">'
-      + '<div style="display:flex;align-items:center;gap:8px;">'
-      + '<span style="font-family:monospace;font-size:0.65rem;color:#6a7a9a;">[IMG]</span>'
-      + '<span style="font-family:monospace;font-size:0.75rem;color:#e8f0ff;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(fn) + '</span>'
-      + '<a href="' + ir + '" download="' + escapeHtml(fn) + '" style="font-family:monospace;font-size:0.7rem;color:var(--blue-bright);text-decoration:none;flex-shrink:0;background:rgba(26,111,255,0.12);border:1px solid rgba(26,111,255,0.4);padding:3px 10px;border-radius:2px;">DOWNLOAD</a>'
-      + '</div></div>';
-  } else if (msg.text && msg.text.length > 0) {
-    return '<div class="' + rc + ' chat-bubble">' + escapeHtml(msg.text) + '</div>';
-  }
-  return '';
-}
-
+// ─── CHAT (text only) ─────────────────────────────────────────
 function appendMsg(msg) {
-  if (!msg.filename && (!msg.text || msg.text.length === 0)) return;
-
+  if (!msg.text || msg.text.length === 0) return;
   var c = document.getElementById('chat-box');
   var emp = document.getElementById('chat-empty');
   if (emp) emp.remove();
-
   lastId = msg.id;
   var isMe = (msg.senderWallet === MY_WALLET);
   var rc = 'chat-' + (msg.role || 'client');
   var time = new Date(msg.at).toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
   var align = isMe ? 'items-end' : 'items-start';
   var nr = isMe ? 'flex-row-reverse' : '';
-
-  var bubble = makeBubble(msg, rc);
-  if (!bubble) return;
-
   var div = document.createElement('div');
   div.className = 'flex flex-col gap-1 ' + align;
   div.innerHTML = '<div class="flex items-center gap-2 ' + nr + '" style="font-size:0.7rem;">'
     + '<span style="color:#6a7a9a;font-family:monospace;">' + escapeHtml(msg.senderName) + '</span>'
     + '<span style="color:#2a3a5a;font-family:monospace;font-size:0.55rem;">' + time + '</span>'
-    + '</div>' + bubble;
+    + '</div><div class="' + rc + ' chat-bubble">' + escapeHtml(msg.text) + '</div>';
   c.appendChild(div);
   scrollChat();
 }
@@ -355,43 +303,19 @@ function appendMsg(msg) {
 async function sendMsg() {
   var inp = document.getElementById('chat-in');
   var text = inp.value.trim();
-  if (!text && !chatFile) return;
+  if (!text) return;
   inp.value = '';
   inp.style.height = 'auto';
-
-  if (chatFile) {
-    var f = chatFile;
-    clearChatFile();
-    var fd = new FormData();
-    fd.append('file', f);
-    try {
-      var up = await fetch('/orders/' + ORDER_ID + '/upload-image', {method:'POST', body:fd});
-      var ud = await up.json();
-      if (ud.success) {
-        var r = await fetch('/orders/' + ORDER_ID + '/chat', {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({text: text || null, filename: ud.filename, fileName: ud.name})
-        });
-        var d = await r.json();
-        if (d.success) appendMsg(d.message);
-        else showToast(d.error || 'Send failed');
-      } else {
-        showToast(ud.error || 'Only image files supported');
-      }
-    } catch(e) { showToast('Upload failed'); }
-  } else {
-    try {
-      var r = await fetch('/orders/' + ORDER_ID + '/chat', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({text: text})
-      });
-      var d = await r.json();
-      if (d.success) appendMsg(d.message);
-      else showToast(d.error || 'Failed');
-    } catch(e) { showToast('Network error'); }
-  }
+  try {
+    var r = await fetch('/orders/' + ORDER_ID + '/chat', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({text: text})
+    });
+    var d = await r.json();
+    if (d.success) appendMsg(d.message);
+    else showToast(d.error || 'Failed to send');
+  } catch(e) { showToast('Network error'); }
 }
 
 setInterval(async function() {
@@ -404,26 +328,12 @@ setInterval(async function() {
   } catch(e) {}
 }, 4000);
 
+// ─── PROJECT DETAILS ──────────────────────────────────────────
 function toggleEdit() {
   var f = document.getElementById('det-form');
   var v = document.getElementById('det-view');
   if (f) f.classList.toggle('hidden');
   if (v) v.classList.toggle('hidden');
-}
-
-function setDocFile(f) {
-  if (!f) return;
-  docFile = f;
-  var n = document.getElementById('doc-fn');
-  n.textContent = f.name;
-  n.classList.remove('hidden');
-}
-
-function docDrop(e) {
-  e.preventDefault();
-  document.getElementById('doc-dz').classList.remove('over');
-  var f = e.dataTransfer.files[0];
-  if (f) setDocFile(f);
 }
 
 async function submitDetails(e) {
@@ -444,33 +354,93 @@ async function submitDetails(e) {
     });
     var d = await r.json();
     if (!d.success) {
-      stat.className = 'font-mono text-xs p-3 rounded-sm';
-      stat.style.cssText = 'background:rgba(255,34,68,0.08);color:#ff5566;border:1px solid rgba(255,34,68,0.3);';
-      stat.textContent = d.error || 'Failed';
+      showStat(stat, d.error || 'Failed', 'error');
       btn.disabled = false;
       btn.textContent = 'SUBMIT PROJECT DETAILS';
       return;
     }
-    if (docFile) {
-      btn.textContent = 'UPLOADING FILE...';
-      var fd = new FormData();
-      fd.append('file', docFile);
-      var up = await fetch('/orders/' + ORDER_ID + '/upload-doc', {method:'POST', body:fd});
-      var ud = await up.json();
-      if (!ud.success) showToast('File upload failed: ' + (ud.error || ''));
-    }
-    stat.className = 'font-mono text-xs p-3 rounded-sm';
-    stat.style.cssText = 'background:rgba(0,255,136,0.08);color:#00ff88;border:1px solid rgba(0,255,136,0.2);';
-    stat.textContent = 'Saved!';
+    showStat(stat, 'Saved!', 'ok');
     btn.textContent = 'SUBMITTED';
-    setTimeout(function() { location.reload(); }, 1200);
+    setTimeout(function() { location.reload(); }, 1000);
   } catch(err) {
-    stat.className = 'font-mono text-xs p-3 rounded-sm';
-    stat.style.cssText = 'background:rgba(255,34,68,0.08);color:#ff5566;border:1px solid rgba(255,34,68,0.3);';
-    stat.textContent = 'Network error';
+    showStat(stat, 'Network error', 'error');
     btn.disabled = false;
     btn.textContent = 'SUBMIT PROJECT DETAILS';
   }
+}
+
+// ─── MULTI-FILE ATTACHMENT UPLOAD ─────────────────────────────
+function handleAttFiles(files) {
+  attFiles = Array.from(files);
+  renderAttQueue();
+}
+
+function attDrop(e) {
+  e.preventDefault();
+  document.getElementById('att-dz').classList.remove('over');
+  attFiles = Array.from(e.dataTransfer.files);
+  renderAttQueue();
+}
+
+function renderAttQueue() {
+  var q = document.getElementById('att-queue');
+  var btn = document.getElementById('att-btn');
+  if (!attFiles.length) { q.classList.add('hidden'); btn.classList.add('hidden'); return; }
+  q.classList.remove('hidden');
+  btn.classList.remove('hidden');
+  q.innerHTML = '';
+  attFiles.forEach(function(f, i) {
+    var row = document.createElement('div');
+    row.className = 'flex items-center gap-2 font-mono text-xs text-slate-400 p-2 rounded-sm';
+    row.style.cssText = 'background:rgba(26,111,255,0.04);border:1px solid var(--dark-border);';
+    row.innerHTML = '<span class="flex-1 truncate">' + escapeHtml(f.name) + '</span>'
+      + '<span style="color:#4a5a7a;">' + (f.size < 1048576 ? (f.size/1024).toFixed(1)+'KB' : (f.size/1048576).toFixed(1)+'MB') + '</span>'
+      + '<button onclick="removeAttFile('+i+')" style="color:#ff5566;background:none;border:none;cursor:pointer;font-size:0.75rem;">x</button>';
+    q.appendChild(row);
+  });
+}
+
+function removeAttFile(idx) {
+  attFiles.splice(idx, 1);
+  document.getElementById('att-fi').value = '';
+  renderAttQueue();
+}
+
+async function uploadAttachments() {
+  if (!attFiles.length) return;
+  var btn = document.getElementById('att-btn');
+  var stat = document.getElementById('att-status');
+  btn.disabled = true;
+  btn.textContent = 'UPLOADING...';
+  var fd = new FormData();
+  attFiles.forEach(function(f) { fd.append('files', f); });
+  try {
+    var r = await fetch('/orders/' + ORDER_ID + '/upload-doc', {method:'POST', body:fd});
+    var d = await r.json();
+    if (d.success) {
+      showStat(stat, 'Files uploaded successfully!', 'ok');
+      attFiles = [];
+      document.getElementById('att-fi').value = '';
+      renderAttQueue();
+      setTimeout(function() { location.reload(); }, 1000);
+    } else {
+      showStat(stat, d.error || 'Upload failed', 'error');
+      btn.disabled = false;
+      btn.textContent = 'UPLOAD FILES';
+    }
+  } catch(e) {
+    showStat(stat, 'Network error', 'error');
+    btn.disabled = false;
+    btn.textContent = 'UPLOAD FILES';
+  }
+}
+
+function showStat(el, msg, type) {
+  el.classList.remove('hidden');
+  var ok = 'background:rgba(0,255,136,0.08);color:#00ff88;border:1px solid rgba(0,255,136,0.2);';
+  var err = 'background:rgba(255,34,68,0.08);color:#ff5566;border:1px solid rgba(255,34,68,0.3);';
+  el.style.cssText = (type === 'ok' ? ok : err);
+  el.textContent = msg;
 }
 </script>
 
