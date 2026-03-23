@@ -165,16 +165,17 @@
                 <span style="color:#6a7a9a;font-family:monospace;"><%= msg.senderName %></span>
                 <span style="color:#2a3a5a;font-family:monospace;font-size:0.55rem;"><%= time %></span>
               </div>
-              <% if (msg.filename) { %>
-                <div class="<%= rc %> chat-bubble" style="padding:8px 10px;">
-                  <div style="display:flex;align-items:center;gap:10px;">
-                    <span style="font-size:1.1rem;">🖼️</span>
+              <% if (msg.filename && dname) { %>
+                <div class="<%= rc %> chat-bubble" style="padding:8px 12px;">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="font-family:monospace;font-size:0.7rem;color:#6a7a9a;">[IMG]</span>
                     <span style="font-family:monospace;font-size:0.75rem;color:#e8f0ff;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><%= dname %></span>
-                    <a href="<%= imgRoute %>" download="<%= dname %>" style="font-family:monospace;font-size:0.7rem;color:var(--blue-bright);text-decoration:none;white-space:nowrap;border:1px solid rgba(26,111,255,0.4);padding:2px 8px;border-radius:2px;">↓ DL</a>
+                    <a href="<%= imgRoute %>" download="<%= dname %>" style="font-family:monospace;font-size:0.7rem;color:var(--blue-bright);text-decoration:none;flex-shrink:0;background:rgba(26,111,255,0.12);border:1px solid rgba(26,111,255,0.4);padding:3px 10px;border-radius:2px;">DOWNLOAD</a>
                   </div>
                 </div>
-              <% } else { %>
-                <div class="<%= rc %> chat-bubble"><%- (msg.text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>') %></div>
+              <% } else if (msg.text && msg.text.trim()) { %>
+                <div class="<%= rc %> chat-bubble"><%- msg.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/
+/g,'<br>') %></div>
               <% } %>
             </div>
           <% }); %>
@@ -315,29 +316,35 @@ async function sendMsg(){
 
 function appendMsg(msg){
   const c = document.getElementById('chat-box');
-  const emp = document.getElementById('chat-empty'); if(emp) emp.remove();
+  const emp = document.getElementById('chat-empty');
+  if(emp) emp.remove();
+
+  // Skip empty/corrupt messages
+  if(!msg.filename && (!msg.text || !msg.text.trim())) return;
+
   lastId = msg.id;
   const isMe = msg.senderWallet === MY_WALLET;
-  const rc = 'chat-' + msg.role;
+  const rc = 'chat-' + (msg.role || 'client');
   const time = new Date(msg.at).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
   const align = isMe ? 'items-end' : 'items-start';
   const nr = isMe ? 'flex-row-reverse' : '';
   const dname = msg.filename ? (msg.fileName||msg.filename).replace(/^\d+_/,'') : '';
-  const isImg = msg.filename && /\.(jpg|jpeg|png|gif|webp|svg|bmp|tiff|avif|heic)$/i.test(msg.fileName||msg.filename);
   const imgRoute = msg.filename ? ('/orders/'+ORDER_ID+'/img/'+msg.filename) : '';
 
   let bubble = '';
-  if(msg.filename){
-    bubble = '<div class="'+rc+' chat-bubble" style="padding:8px 10px;">'
-      + '<div style="display:flex;align-items:center;gap:10px;">'
-      + '<span style="font-size:1.1rem;">🖼️</span>'
+  if(msg.filename && dname){
+    bubble = '<div class="'+rc+' chat-bubble" style="padding:8px 12px;">'
+      + '<div style="display:flex;align-items:center;gap:8px;">'
+      + '<span style="font-family:monospace;font-size:0.7rem;color:#6a7a9a;">[IMG]</span>'
       + '<span style="font-family:monospace;font-size:0.75rem;color:#e8f0ff;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+dname+'</span>'
-      + '<a href="'+imgRoute+'" download="'+dname+'" style="font-family:monospace;font-size:0.7rem;color:var(--blue-bright);text-decoration:none;white-space:nowrap;border:1px solid rgba(26,111,255,0.4);padding:2px 8px;border-radius:2px;">↓ DL</a>'
-      + '</div>'
-      + '</div>';
-  } else {
-    const t = (msg.text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+      + '<a href="'+imgRoute+'" download="'+dname+'" style="font-family:monospace;font-size:0.7rem;color:var(--blue-bright);text-decoration:none;flex-shrink:0;background:rgba(26,111,255,0.12);border:1px solid rgba(26,111,255,0.4);padding:3px 10px;border-radius:2px;">DOWNLOAD</a>'
+      + '</div></div>';
+  } else if(msg.text && msg.text.trim()){
+    const t = msg.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/
+/g,'<br>');
     bubble = '<div class="'+rc+' chat-bubble">'+t+'</div>';
+  } else {
+    return; // nothing to show
   }
 
   const div = document.createElement('div');
