@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Environment — NEVER commit real .env
+.env
+
+# Runtime data (orders, chats, attachments, developer registry)
+data/orders.json
+data/chats.json
+data/developers.json
+data/attachments/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# PM2
+.pm2/
+ecosystem.config.js
+
+# Archives
+*.tar.gz
+*.zip

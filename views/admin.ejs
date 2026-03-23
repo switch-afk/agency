@@ -1,0 +1,185 @@
+<%- include('partials/header') %>
+
+<div class="content-layer pt-28 min-h-screen">
+  <div class="max-w-7xl mx-auto px-6 pb-24">
+
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10 pb-8 border-b" style="border-color:var(--dark-border)">
+      <div>
+        <p class="font-mono text-xs tracking-[0.3em] mb-2" style="color:#ffaa00">ADMIN PANEL</p>
+        <h1 class="font-display font-extrabold text-4xl">ORDER CONTROL</h1>
+      </div>
+      <a href="/dashboard" class="btn-outline px-5 py-2 rounded-sm text-sm">USER VIEW</a>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-12">
+      <div class="service-card rounded-sm p-4 text-center"><div class="font-display font-bold text-2xl text-white"><%= stats.total %></div><div class="font-mono text-xs text-slate-500 mt-1">TOTAL</div></div>
+      <div class="service-card rounded-sm p-4 text-center"><div class="font-display font-bold text-2xl" style="color:#ffaa00"><%= stats.pending %></div><div class="font-mono text-xs text-slate-500 mt-1">PENDING</div></div>
+      <div class="service-card rounded-sm p-4 text-center"><div class="font-display font-bold text-2xl" style="color:#00ff88"><%= stats.paid %></div><div class="font-mono text-xs text-slate-500 mt-1">PAID</div></div>
+      <div class="service-card rounded-sm p-4 text-center"><div class="font-display font-bold text-2xl" style="color:#4d9fff"><%= stats.inProgress %></div><div class="font-mono text-xs text-slate-500 mt-1">BUILDING</div></div>
+      <div class="service-card rounded-sm p-4 text-center"><div class="font-display font-bold text-2xl" style="color:#aa44ff"><%= stats.delivered %></div><div class="font-mono text-xs text-slate-500 mt-1">DELIVERED</div></div>
+      <div class="service-card rounded-sm p-4 text-center"><div class="font-display font-bold text-2xl" style="color:#00ff44"><%= stats.completed %></div><div class="font-mono text-xs text-slate-500 mt-1">DONE</div></div>
+      <div class="service-card rounded-sm p-4 text-center md:col-span-2 lg:col-span-1"><div class="font-display font-bold text-2xl" style="color:var(--blue-bright)">$<%= stats.revenue.toLocaleString() %></div><div class="font-mono text-xs text-slate-500 mt-1">REVENUE</div></div>
+    </div>
+
+    <!-- Developer Registry -->
+    <div class="service-card rounded-sm p-6 mb-10">
+      <div class="section-line mb-5">
+        <span class="font-mono text-xs tracking-widest" style="color:#ffaa00">DEVELOPER REGISTRY</span>
+      </div>
+      <div class="grid md:grid-cols-2 gap-6">
+        <!-- Add developer form -->
+        <div>
+          <h4 class="font-mono text-xs text-slate-400 mb-3">ADD / UPDATE DEVELOPER</h4>
+          <div class="flex flex-col gap-2">
+            <input id="dev-name" placeholder="Developer name" class="chat-input w-full rounded-sm" />
+            <input id="dev-wallet" placeholder="Solana wallet address" class="chat-input w-full rounded-sm" />
+            <button onclick="addDev()" class="btn-glow py-2 rounded-sm text-xs">ADD DEVELOPER</button>
+          </div>
+          <div id="dev-status" class="hidden mt-2 font-mono text-xs p-2 rounded-sm"></div>
+        </div>
+        <!-- Developer list -->
+        <div>
+          <h4 class="font-mono text-xs text-slate-400 mb-3">REGISTERED (<%= devs.length %>)</h4>
+          <% if (devs.length === 0) { %>
+            <p class="font-mono text-xs text-slate-600">No developers added yet.</p>
+          <% } else { %>
+          <div class="flex flex-col gap-2" id="dev-list">
+            <% devs.forEach(dev => { %>
+            <div class="flex items-center justify-between p-3 rounded-sm" style="background:rgba(0,255,100,0.04); border:1px solid rgba(0,255,100,0.12);" id="dev-<%= dev.wallet %>">
+              <div>
+                <div class="font-display font-semibold text-sm" style="color:#80ffcc"><%= dev.name %></div>
+                <div class="font-mono text-xs text-slate-500 mt-0.5"><%= dev.wallet.slice(0,10) %>...<%= dev.wallet.slice(-6) %></div>
+              </div>
+              <button onclick="removeDev('<%= dev.wallet %>')" class="font-mono text-xs text-red-500 hover:text-red-400 ml-3">✕</button>
+            </div>
+            <% }) %>
+          </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Orders list -->
+    <div class="section-line mb-6">
+      <span class="font-mono text-xs tracking-widest" style="color:#ffaa00">ALL ORDERS</span>
+    </div>
+
+    <% if (!orders || orders.length === 0) { %>
+    <div class="text-center py-16 font-mono text-slate-500">NO ORDERS YET</div>
+    <% } else { %>
+    <div class="flex flex-col gap-4">
+      <% orders.forEach(order => { %>
+      <div class="service-card rounded-sm p-5" id="order-<%= order.id %>">
+        <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
+          <!-- Info -->
+          <div class="flex-1">
+            <div class="flex flex-wrap items-center gap-3 mb-2">
+              <a href="/orders/<%= order.id %>" class="font-mono font-bold text-white hover:text-blue-400 transition-colors"><%= order.id %></a>
+              <span class="status-badge status-<%= order.status %>"><%= order.status.replace('_',' ') %></span>
+              <span class="font-mono text-xs text-slate-500"><%= new Date(order.createdAt).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'}) %></span>
+            </div>
+            <div class="font-mono text-xs text-slate-500 mb-2">
+              CLIENT: <span class="text-slate-300"><%= order.wallet.slice(0,8) %>...<%= order.wallet.slice(-6) %></span>
+              <% if (order.developerName) { %> · DEV: <span style="color:#00ff88"><%= order.developerName %></span><% } %>
+            </div>
+            <div class="flex flex-wrap gap-1 mb-2">
+              <% order.items.forEach(item => { %><span class="font-mono text-xs px-2 py-1 rounded-sm" style="background:rgba(26,111,255,0.08);color:var(--blue-pale);border:1px solid var(--dark-border)"><%= item.name %></span><% }) %>
+            </div>
+            <div class="font-mono text-xs text-slate-400">
+              <span class="font-bold" style="color:var(--blue-bright)">$<%= order.totalUSD %></span>
+              <% if (order.txHash) { %> · <a href="https://solscan.io/tx/<%= order.txHash %>" target="_blank" style="color:var(--blue-bright)">TX ↗</a><% } %>
+              <% if (order.projectDetails?.projectName) { %> · PROJECT: <span style="color:#4d9fff"><%= order.projectDetails.projectName %></span><% } %>
+            </div>
+          </div>
+          <!-- Controls -->
+          <div class="flex-shrink-0 flex flex-col gap-2 min-w-[260px]">
+            <!-- Status update -->
+            <select id="status-<%= order.id %>" class="font-mono text-xs py-2 px-3 rounded-sm" style="background:var(--dark-bg);border:1px solid var(--dark-border);color:#e8f0ff;">
+              <% ['pending_payment','paid','in_progress','review','delivered','completed','cancelled'].forEach(s => { %>
+                <option value="<%= s %>" <%= order.status===s?'selected':'' %>><%= s.replace('_',' ').toUpperCase() %></option>
+              <% }) %>
+            </select>
+            <input type="text" id="note-<%= order.id %>" placeholder="Note for client (optional)..."
+              class="font-mono text-xs py-2 px-3 rounded-sm w-full" style="background:var(--dark-bg);border:1px solid var(--dark-border);color:#e8f0ff;" />
+            <button onclick="updateStatus('<%= order.id %>')" class="btn-glow py-2 rounded-sm text-xs">UPDATE STATUS</button>
+            <!-- Assign developer -->
+            <div class="flex gap-2 mt-1">
+              <select id="devsel-<%= order.id %>" class="font-mono text-xs py-2 px-2 rounded-sm flex-1" style="background:var(--dark-bg);border:1px solid var(--dark-border);color:#e8f0ff;">
+                <option value="">Assign developer...</option>
+                <% devs.forEach(dev => { %>
+                  <option value="<%= dev.wallet %>|<%= dev.name %>" <%= order.developerWallet===dev.wallet?'selected':'' %>><%= dev.name %></option>
+                <% }) %>
+              </select>
+              <button onclick="assignDev('<%= order.id %>')" class="btn-outline px-3 py-2 rounded-sm text-xs flex-shrink-0">ASSIGN</button>
+            </div>
+            <a href="/orders/<%= order.id %>" class="btn-outline py-2 rounded-sm text-xs text-center">OPEN CHAT & DETAILS →</a>
+            <a href="/orders/<%= order.id %>/attachments/zip" class="btn-outline py-2 rounded-sm text-xs text-center" style="color:#00ccff;border-color:rgba(0,204,255,0.3);" onclick="return checkZip(event, '<%= order.id %>')">⬇ DOWNLOAD ATTACHMENTS ZIP</a>
+          </div>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+    <% } %>
+  </div>
+</div>
+
+<script>
+async function updateStatus(orderId) {
+  const status = document.getElementById('status-'+orderId).value;
+  const note = document.getElementById('note-'+orderId).value.trim();
+  try {
+    const res = await fetch('/admin/order/'+orderId+'/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status,note})});
+    const data = await res.json();
+    if(data.success){showToast('✓ '+orderId+' → '+status);document.getElementById('note-'+orderId).value='';}
+    else showToast('Error: '+(data.error||'failed'));
+  } catch(e){showToast('Network error');}
+}
+
+async function assignDev(orderId) {
+  const sel = document.getElementById('devsel-'+orderId);
+  const val = sel.value;
+  if (!val) return showToast('Select a developer first');
+  const [wallet, name] = val.split('|');
+  try {
+    const res = await fetch('/admin/order/'+orderId+'/assign-dev',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({developerWallet:wallet,developerName:name})});
+    const data = await res.json();
+    if(data.success) showToast('✓ '+name+' assigned to '+orderId);
+    else showToast('Error: '+(data.error||'failed'));
+  } catch(e){showToast('Network error');}
+}
+
+async function addDev() {
+  const name = document.getElementById('dev-name').value.trim();
+  const wallet = document.getElementById('dev-wallet').value.trim();
+  const status = document.getElementById('dev-status');
+  if (!name || !wallet) { showToast('Name and wallet required'); return; }
+  try {
+    const res = await fetch('/admin/developers/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,wallet})});
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById('dev-name').value=''; document.getElementById('dev-wallet').value='';
+      status.classList.remove('hidden'); status.style.background='rgba(0,255,136,0.08)'; status.style.color='#00ff88'; status.style.border='1px solid rgba(0,255,136,0.2)';
+      status.textContent='✓ Developer '+data.dev.name+' added';
+      setTimeout(()=>location.reload(),1000);
+    } else {
+      showToast('Error: '+(data.error||'failed'));
+    }
+  } catch(e){showToast('Network error');}
+}
+
+function checkZip(e, orderId) {
+  // Let browser handle the download naturally — just prevent double navigation
+  return true;
+}
+
+async function removeDev(wallet) {
+  try {
+    const res = await fetch('/admin/developers/remove',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({wallet})});
+    const data = await res.json();
+    if(data.success){document.getElementById('dev-'+wallet)?.remove();showToast('Developer removed');}
+  } catch(e){showToast('Network error');}
+}
+</script>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,82 @@
+<%- include('partials/header') %>
+
+<div class="content-layer pt-28 min-h-screen">
+  <div class="max-w-4xl mx-auto px-6 pb-24">
+    <div class="mb-10">
+      <p class="font-mono text-xs tracking-[0.3em] mb-2" style="color:var(--blue-core)">ORDER SUMMARY</p>
+      <h1 class="font-display font-extrabold text-4xl">YOUR CART</h1>
+      <p class="font-mono text-xs text-slate-500 mt-2">WALLET: <span style="color:var(--blue-pale)"><%= walletAddress %></span></p>
+    </div>
+
+    <% if (!cart || cart.length === 0) { %>
+    <div class="text-center py-24">
+      <p class="font-mono text-slate-500 mb-6">YOUR CART IS EMPTY</p>
+      <a href="/dashboard" class="btn-glow px-8 py-3 rounded-sm">BROWSE SERVICES →</a>
+    </div>
+    <% } else { %>
+    <div class="grid md:grid-cols-3 gap-8">
+      <div class="md:col-span-2 flex flex-col gap-3">
+        <% cart.forEach(item => { %>
+        <div class="service-card rounded-sm p-5 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl"><%= item.icon || '◈' %></span>
+            <div>
+              <h3 class="font-display font-semibold text-base"><%= item.name %></h3>
+              <p class="font-mono text-xs text-slate-500 mt-1">SOLANA ECOSYSTEM SERVICE</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-4">
+            <span class="font-display font-bold text-xl" style="color:var(--blue-bright)">$<%= item.price %></span>
+            <button onclick="removeLine('<%= item.id %>')" class="btn-outline px-3 py-2 rounded-sm text-red-400 text-xs" style="border-color:#4a1111">✕</button>
+          </div>
+        </div>
+        <% }) %>
+      </div>
+
+      <!-- Order total -->
+      <div>
+        <div class="service-card rounded-sm p-6 sticky top-24">
+          <h3 class="font-display font-bold text-lg mb-6">ORDER TOTAL</h3>
+          <div class="flex flex-col gap-2 mb-5">
+            <% cart.forEach(item => { %>
+            <div class="flex justify-between items-center">
+              <span class="text-xs text-slate-400 truncate max-w-[65%]"><%= item.name %></span>
+              <span class="font-mono text-sm text-slate-300">$<%= item.price %></span>
+            </div>
+            <% }) %>
+          </div>
+          <div class="border-t pt-4 mb-2" style="border-color:var(--dark-border)">
+            <div class="flex justify-between items-center">
+              <span class="font-mono text-xs text-slate-400">TOTAL (USD)</span>
+              <span class="font-display font-bold text-2xl" style="color:var(--blue-bright)">$<%= total %></span>
+            </div>
+          </div>
+          <% if (solPrice && solPrice > 0) { %>
+          <div class="flex justify-between items-center mb-6">
+            <span class="font-mono text-xs text-slate-500">≈ SOL</span>
+            <span class="font-mono text-sm text-slate-300"><%= solTotal %> SOL</span>
+          </div>
+          <% } else { %><div class="mb-6"></div><% } %>
+
+          <div class="p-3 mb-4 rounded-sm font-mono text-xs text-slate-500" style="background:rgba(26,111,255,0.05); border:1px solid var(--dark-border)">
+            ◈ FULL PAYMENT REQUIRED<br>
+            ◈ SOL ACCEPTED<br>
+            ◈ PAYMENT ON SOLANA MAINNET
+          </div>
+          <a href="/checkout" class="btn-glow block w-full text-center py-3 rounded-sm">PROCEED TO PAYMENT →</a>
+          <a href="/dashboard" class="btn-outline block w-full text-center py-3 rounded-sm mt-3">← ADD MORE SERVICES</a>
+        </div>
+      </div>
+    </div>
+    <% } %>
+  </div>
+</div>
+
+<script>
+async function removeLine(id) {
+  await fetch('/cart/remove', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({serviceId:id}) });
+  window.location.reload();
+}
+</script>
+
+<%- include('partials/footer') %>

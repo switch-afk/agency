@@ -1,0 +1,55 @@
+<%- include('partials/header') %>
+
+<div class="content-layer pt-28 min-h-screen">
+  <div class="max-w-5xl mx-auto px-6 pb-24">
+
+    <div class="flex items-center justify-between mb-10 pb-8 border-b" style="border-color:var(--dark-border)">
+      <div>
+        <p class="font-mono text-xs tracking-[0.3em] mb-2" style="color:#00ff88">DEVELOPER PANEL</p>
+        <h1 class="font-display font-extrabold text-4xl">DEV DASHBOARD</h1>
+        <p class="font-mono text-xs text-slate-500 mt-2">
+          <span style="color:#00ff88"><%= dev.name %></span>
+          · <%= walletAddress.slice(0,6) %>...<%= walletAddress.slice(-4) %>
+        </p>
+      </div>
+    </div>
+
+    <% if (!orders || orders.length === 0) { %>
+      <div class="text-center py-20 font-mono text-slate-500">NO ORDERS ASSIGNED YET</div>
+    <% } else { %>
+    <div class="section-line mb-6">
+      <span class="font-mono text-xs tracking-widest" style="color:#00ff88">ASSIGNED ORDERS (<%= orders.length %>)</span>
+    </div>
+    <div class="flex flex-col gap-4">
+      <% orders.forEach(order => { %>
+      <a href="/orders/<%= order.id %>" class="service-card rounded-sm p-5 block no-underline hover:no-underline">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-3 mb-2">
+              <span class="font-mono font-bold text-white"><%= order.id %></span>
+              <span class="status-badge status-<%= order.status %>"><%= order.status.replace('_',' ') %></span>
+            </div>
+            <div class="flex flex-wrap gap-1 mb-2">
+              <% order.items.forEach(item => { %>
+                <span class="font-mono text-xs px-2 py-1 rounded-sm" style="background:rgba(0,255,100,0.06); color:#80ffcc; border:1px solid rgba(0,255,100,0.15)"><%= item.name %></span>
+              <% }) %>
+            </div>
+            <div class="font-mono text-xs text-slate-500">
+              CLIENT: <%= order.wallet.slice(0,6) %>...<%= order.wallet.slice(-4) %> ·
+              <%= new Date(order.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) %>
+            </div>
+            <% if (order.projectDetails?.projectName) { %>
+              <div class="font-mono text-xs mt-1" style="color:#4d9fff">PROJECT: <%= order.projectDetails.projectName %></div>
+            <% } %>
+          </div>
+          <div class="font-mono text-xs text-slate-500 flex-shrink-0">OPEN CHAT →</div>
+        </div>
+      </a>
+      <% }) %>
+    </div>
+    <% } %>
+
+  </div>
+</div>
+
+<%- include('partials/footer') %>

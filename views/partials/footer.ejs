@@ -1,0 +1,270 @@
+<div id="cart-overlay" onclick="toggleCart()"></div>
+
+<div id="cart-panel">
+  <div class="p-6 border-b" style="border-color:var(--dark-border)">
+    <div class="flex items-center justify-between">
+      <h2 class="font-display font-bold text-lg">YOUR ORDER</h2>
+      <button onclick="toggleCart()" class="text-slate-400 hover:text-white text-xl leading-none">✕</button>
+    </div>
+    <p class="font-mono text-xs text-slate-500 mt-1">REVIEW & CHECKOUT</p>
+  </div>
+  <div id="cart-items" class="p-6 flex flex-col gap-3 min-h-40"></div>
+  <div class="p-6 border-t" style="border-color:var(--dark-border)">
+    <div class="flex justify-between items-center mb-4">
+      <span class="font-mono text-xs text-slate-400">TOTAL (USD)</span>
+      <span class="font-display font-bold text-xl" id="cart-total">$0</span>
+    </div>
+    <div class="flex justify-between items-center mb-5">
+      <span class="font-mono text-xs text-slate-500">≈ SOL</span>
+      <span class="font-mono text-sm" style="color:var(--blue-bright)" id="cart-total-sol">—</span>
+    </div>
+    <% if (locals.walletAddress) { %>
+      <a href="/cart" class="btn-glow block w-full text-center px-6 py-3 rounded-sm">CHECKOUT →</a>
+    <% } else { %>
+      <button onclick="closeCart(); openConnectModal();" class="btn-glow w-full px-6 py-3 rounded-sm">CONNECT WALLET TO ORDER</button>
+    <% } %>
+    <p class="font-mono text-xs text-slate-600 text-center mt-3">PAYMENT VIA SOL</p>
+  </div>
+</div>
+
+<!-- CONNECT WALLET MODAL -->
+<div id="connect-modal">
+  <div class="modal-box">
+    <button onclick="closeConnectModal()" class="absolute top-4 right-4 text-slate-500 hover:text-white text-lg leading-none">✕</button>
+    <div class="flex items-center gap-3 mb-6">
+      <img src="/images/logo.jpg" alt="logo" class="w-8 h-8 object-cover logo-img rounded-sm" />
+      <span class="font-display font-bold text-lg">BLUE <span style="color:var(--blue-core)">BRICK</span></span>
+    </div>
+    <h3 class="font-display font-bold text-2xl mb-2">Connect Wallet</h3>
+    <p class="text-slate-400 text-sm mb-8">Connect your Solana wallet to access the dashboard and place orders.</p>
+    <div class="flex flex-col gap-3" id="wallet-options">
+      <button onclick="connectPhantom()" class="flex items-center gap-4 p-4 border transition-all hover:border-purple-500 hover:bg-purple-900/10 rounded-sm text-left" style="border-color:var(--dark-border)">
+        <span class="text-2xl">👻</span>
+        <div><div class="font-display font-semibold">Phantom</div><div class="text-xs text-slate-500 font-mono">MOST POPULAR</div></div>
+      </button>
+      <button onclick="connectBackpack()" class="flex items-center gap-4 p-4 border transition-all hover:border-blue-500 hover:bg-blue-900/10 rounded-sm text-left" style="border-color:var(--dark-border)">
+        <span class="text-2xl">🎒</span>
+        <div><div class="font-display font-semibold">Backpack</div><div class="text-xs text-slate-500 font-mono">xNFT WALLET</div></div>
+      </button>
+      <button onclick="connectSolflare()" class="flex items-center gap-4 p-4 border transition-all hover:border-orange-500 hover:bg-orange-900/10 rounded-sm text-left" style="border-color:var(--dark-border)">
+        <span class="text-2xl">🔆</span>
+        <div><div class="font-display font-semibold">Solflare</div><div class="text-xs text-slate-500 font-mono">LEDGER SUPPORT</div></div>
+      </button>
+    </div>
+    <div id="wallet-connecting" class="hidden text-center py-8">
+      <div class="font-mono text-sm text-slate-400 mb-4">CONNECTING...</div>
+      <div class="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+    </div>
+    <div id="wallet-error" class="hidden mt-4 p-3 border border-red-900 bg-red-950/30 font-mono text-xs text-red-400 rounded-sm"></div>
+    <p class="font-mono text-xs text-slate-600 text-center mt-6">Powered by QuickNode RPC · Solana Mainnet</p>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[400] font-mono text-xs px-5 py-3 rounded-sm opacity-0 pointer-events-none transition-all duration-300" style="background:var(--dark-card); border:1px solid var(--dark-border); white-space:nowrap;"></div>
+
+<footer class="content-layer border-t mt-32" style="border-color:var(--dark-border)">
+  <div class="max-w-7xl mx-auto px-6 py-16">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+      <div class="md:col-span-2">
+        <div class="flex items-center gap-3 mb-4">
+          <img src="/images/logo.jpg" alt="Blue Brick" class="logo-img w-10 h-10 object-cover rounded-sm" />
+          <span class="font-display font-bold text-xl text-white">BLUE <span style="color:var(--blue-core)">BRICK</span></span>
+        </div>
+        <p class="text-slate-400 text-sm max-w-xs leading-relaxed">Building the infrastructure of the Solana ecosystem. From tokens to dApps, we architect your on-chain presence.</p>
+      </div>
+      <div>
+        <h4 class="font-mono text-xs tracking-widest text-slate-500 mb-4">CONNECT</h4>
+        <ul class="flex flex-col gap-2 text-sm text-slate-400">
+          <li><a href="https://x.com/bluebrickonsol" target="_blank" rel="noopener" class="hover:text-white transition-colors font-mono text-xs tracking-wide">X</a></li>
+          <li><a href="https://discord.com/invite/k7xbBrrJWF" target="_blank" rel="noopener" class="hover:text-white transition-colors font-mono text-xs tracking-wide">Discord</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t mt-10 pt-6 flex flex-col md:flex-row justify-between items-center gap-4" style="border-color:var(--dark-border)">
+      <p class="font-mono text-xs text-slate-600">© 2026 BLUE BRICK. ALL RIGHTS RESERVED.</p>
+      <p class="font-mono text-xs" style="color:var(--blue-core)">BUILT ON SOLANA ◎</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ─── Cart ──────────────────────────────────────────────────────
+let cartOpen = false;
+
+function toggleCart() {
+  cartOpen = !cartOpen;
+  document.getElementById('cart-panel').classList.toggle('open', cartOpen);
+  document.getElementById('cart-overlay').classList.toggle('open', cartOpen);
+  if (cartOpen) loadCart();
+}
+function closeCart() {
+  cartOpen = false;
+  document.getElementById('cart-panel').classList.remove('open');
+  document.getElementById('cart-overlay').classList.remove('open');
+}
+
+async function loadCart() {
+  try {
+    const res = await fetch('/cart/data');
+    const { cart, total } = await res.json();
+    const container = document.getElementById('cart-items');
+    if (!cart || cart.length === 0) {
+      container.innerHTML = '<div class="text-center text-slate-500 font-mono text-xs py-12">CART IS EMPTY</div>';
+      document.getElementById('cart-total').textContent = '$0';
+      document.getElementById('cart-total-sol').textContent = '—';
+      return;
+    }
+    container.innerHTML = cart.map(item => `
+      <div class="flex items-start justify-between p-3 border rounded-sm" style="border-color:var(--dark-border)">
+        <div class="flex items-start gap-2">
+          <span class="text-lg">${item.icon || '◈'}</span>
+          <div>
+            <div class="font-display font-semibold text-sm leading-tight">${item.name}</div>
+            <div class="font-mono text-xs mt-1" style="color:var(--blue-bright)">$${item.price}</div>
+          </div>
+        </div>
+        <button onclick="removeFromCart('${item.id}')" class="text-slate-500 hover:text-red-400 text-sm ml-3 leading-none mt-1">✕</button>
+      </div>
+    `).join('');
+    document.getElementById('cart-total').textContent = '$' + total.toLocaleString();
+
+    // Fetch sol price for conversion
+    try {
+      const pr = await fetch('/api/sol-price');
+      const pd = await pr.json();
+      if (pd.price && pd.price > 0) {
+        const sol = (total / pd.price).toFixed(4);
+        document.getElementById('cart-total-sol').textContent = sol + ' SOL';
+      }
+    } catch(e) {}
+  } catch(e) {
+    document.getElementById('cart-items').innerHTML = '<div class="text-center text-red-500 font-mono text-xs py-12">FAILED TO LOAD CART</div>';
+  }
+}
+
+async function addToCart(serviceId) {
+  try {
+    const res = await fetch('/cart/add', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ serviceId })
+    });
+    const data = await res.json();
+    if (data.success) {
+      updateCartBadge(data.cartCount);
+      showToast('✓ Added to cart');
+      if (cartOpen) loadCart();
+    } else {
+      showToast('Error: ' + (data.error || 'Could not add'));
+    }
+  } catch(e) { showToast('Network error'); }
+}
+
+async function removeFromCart(serviceId) {
+  try {
+    const res = await fetch('/cart/remove', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ serviceId })
+    });
+    const data = await res.json();
+    updateCartBadge(data.cartCount);
+    loadCart();
+  } catch(e) {}
+}
+
+function updateCartBadge(count) {
+  const badge = document.getElementById('cart-badge');
+  if (badge) { badge.textContent = count; badge.style.display = count > 0 ? 'flex' : 'none'; }
+}
+
+// ─── Connect Modal ─────────────────────────────────────────────
+function openConnectModal() { document.getElementById('connect-modal').classList.add('open'); }
+function closeConnectModal() { document.getElementById('connect-modal').classList.remove('open'); resetConnectModal(); }
+function resetConnectModal() {
+  document.getElementById('wallet-options').classList.remove('hidden');
+  document.getElementById('wallet-connecting').classList.add('hidden');
+  document.getElementById('wallet-error').classList.add('hidden');
+  document.getElementById('wallet-error').textContent = '';
+}
+
+async function connectWalletWithAddress(address) {
+  try {
+    const res = await fetch('/auth/wallet-connect', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ address })
+    });
+    const data = await res.json();
+    if (data.success) {
+      closeConnectModal();
+      showToast('✓ Wallet connected');
+      setTimeout(() => {
+        window.location.href = data.isAdmin ? '/admin' : '/dashboard';
+      }, 800);
+    } else {
+      showWalletError(data.error || 'Connection failed');
+    }
+  } catch(e) { showWalletError('Network error. Try again.'); }
+}
+
+async function connectPhantom() {
+  if (!window.solana?.isPhantom) return showWalletError('Phantom not detected. Install Phantom wallet.');
+  showConnecting();
+  try {
+    const resp = await window.solana.connect();
+    await connectWalletWithAddress(resp.publicKey.toString());
+  } catch(e) { showWalletError(e.message || 'Connection rejected.'); }
+}
+
+async function connectBackpack() {
+  if (!window.backpack) return showWalletError('Backpack not detected. Install Backpack wallet.');
+  showConnecting();
+  try {
+    await window.backpack.connect();
+    await connectWalletWithAddress(window.backpack.publicKey.toString());
+  } catch(e) { showWalletError(e.message || 'Connection rejected.'); }
+}
+
+async function connectSolflare() {
+  if (!window.solflare?.isSolflare) return showWalletError('Solflare not detected. Install Solflare wallet.');
+  showConnecting();
+  try {
+    await window.solflare.connect();
+    await connectWalletWithAddress(window.solflare.publicKey.toString());
+  } catch(e) { showWalletError(e.message || 'Connection rejected.'); }
+}
+
+async function disconnectWallet() {
+  try { await fetch('/auth/wallet-disconnect', { method:'POST' }); } catch(e) {}
+  window.location.href = '/';
+}
+
+function showConnecting() {
+  document.getElementById('wallet-options').classList.add('hidden');
+  document.getElementById('wallet-connecting').classList.remove('hidden');
+}
+function showWalletError(msg) {
+  resetConnectModal();
+  const el = document.getElementById('wallet-error');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+
+// ─── Toast ────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.opacity = '1';
+  t.style.transform = 'translateX(-50%) translateY(0)';
+  setTimeout(() => { t.style.opacity = '0'; }, 2800);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeConnectModal(); closeCart(); }
+});
+
+// Show connect modal if redirected
+const _params = new URLSearchParams(window.location.search);
+if (_params.get('connectRequired')) setTimeout(openConnectModal, 400);
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+<%- include('partials/header') %>
+
+<div class="content-layer min-h-screen flex items-center justify-center px-6">
+  <div class="text-center max-w-lg">
+    <div class="font-display font-extrabold text-glow mb-4" style="font-size:8rem; line-height:1; color:var(--blue-core); opacity:0.3;"><%= code %></div>
+    <h1 class="font-display font-extrabold text-3xl mb-3"><%= message %></h1>
+    <p class="text-slate-400 mb-10"><%= sub %></p>
+    <a href="<%= back %>" class="btn-glow px-8 py-3 rounded-sm inline-block">← GO BACK</a>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

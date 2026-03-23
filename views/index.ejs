@@ -1,0 +1,143 @@
+<%- include('partials/header') %>
+<% locals.isHomePage = true; %>
+
+<div class="content-layer">
+
+  <!-- HERO -->
+  <section class="min-h-screen flex flex-col justify-center items-center text-center px-6 pt-24 pb-16 relative">
+    <div class="fade-up delay-1 mb-6">
+      <img src="/images/logo.jpg" alt="Blue Brick" class="logo-img w-28 h-28 object-cover rounded-md mx-auto" style="box-shadow:0 0 60px rgba(26,111,255,0.4)" />
+    </div>
+    <div class="fade-up delay-2">
+      <p class="font-mono text-xs tracking-[0.3em] mb-4" style="color:var(--blue-core)">SOLANA DEVELOPMENT AGENCY</p>
+      <h1 class="font-display font-extrabold text-glow leading-none mb-6" style="font-size:clamp(3rem,8vw,7rem)">
+        BLUE<br><span style="color:var(--blue-core)">BRICK</span>
+      </h1>
+      <p class="text-slate-300 text-lg max-w-xl mx-auto leading-relaxed font-light">
+        We architect tokens, dApps, DeFi protocols, and brands on Solana.<br>From idea to mainnet — full stack, full speed.
+      </p>
+    </div>
+    <div class="fade-up delay-3 mt-10">
+      <a href="#services" class="btn-glow px-8 py-4 rounded-sm text-sm">EXPLORE SERVICES</a>
+    </div>
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-40">
+      <span class="font-mono text-xs tracking-widest" style="color:var(--blue-pale)">SCROLL</span>
+      <div class="w-px h-10 bg-gradient-to-b from-blue-500 to-transparent animate-pulse"></div>
+    </div>
+  </section>
+
+  <!-- WHAT WE DO -->
+  <section class="py-16 border-y" style="border-color:var(--dark-border)">
+    <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-10">
+      <div class="flex gap-4 items-start">
+        <div class="text-3xl mt-1">⚡</div>
+        <div><h3 class="font-display font-bold text-lg mb-2">Lightning Fast</h3><p class="text-slate-400 text-sm leading-relaxed">Solana processes 50,000+ TPS at sub-cent fees. We build apps that leverage this raw speed.</p></div>
+      </div>
+      <div class="flex gap-4 items-start">
+        <div class="text-3xl mt-1">🔩</div>
+        <div><h3 class="font-display font-bold text-lg mb-2">Rust-First</h3><p class="text-slate-400 text-sm leading-relaxed">Every smart contract written in Rust/Anchor — memory safe, auditable, production-grade from day one.</p></div>
+      </div>
+      <div class="flex gap-4 items-start">
+        <div class="text-3xl mt-1">🎯</div>
+        <div><h3 class="font-display font-bold text-lg mb-2">Ecosystem Native</h3><p class="text-slate-400 text-sm leading-relaxed">Deep integrations with Raydium, Jupiter, pump.fun, PumpSwap, Jito, and the full Solana DeFi stack.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section id="services" class="py-24 px-6">
+    <div class="max-w-7xl mx-auto">
+      <div class="section-line mb-4">
+        <span class="font-mono text-xs tracking-[0.3em]" style="color:var(--blue-core)">WHAT WE BUILD</span>
+      </div>
+      <h2 class="font-display font-extrabold text-5xl mb-4">SERVICES</h2>
+      <p class="text-slate-400 text-lg mb-10 max-w-xl">Every deliverable is production-ready, mainnet-deployed, handed over with documentation.</p>
+
+      <div class="flex flex-wrap gap-2 mb-12">
+        <button class="category-pill active" onclick="filterCat('all',this)">ALL</button>
+        <% Object.keys(categories).forEach(cat => { %>
+          <button class="category-pill" onclick="filterCat('<%= cat %>',this)"><%= cat.toUpperCase() %></button>
+        <% }) %>
+      </div>
+
+      <% Object.entries(categories).forEach(([catName, catServices]) => { %>
+      <div class="category-block mb-16" data-cat="<%= catName %>">
+        <div class="section-line mb-8">
+          <span class="font-mono text-xs tracking-widest text-slate-400"><%= catName.toUpperCase() %></span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <% catServices.forEach(service => { %>
+          <a href="/services/<%= service.id %>" class="service-card rounded-sm p-6 block cursor-pointer no-underline">
+            <div class="flex items-start justify-between mb-4">
+              <span class="text-3xl"><%= service.icon %></span>
+              <div class="flex items-center gap-2">
+                <% if (service.badge === 'NEW') { %><span class="badge-new text-white">NEW</span><% } %>
+                <% if (service.badge === 'HOT') { %><span class="badge-hot text-white">HOT</span><% } %>
+                <% if (service.badge === 'TEST') { %><span class="badge-test">TEST</span><% } %>
+              </div>
+            </div>
+            <h3 class="font-display font-bold text-lg mb-2 leading-tight text-white"><%= service.name %></h3>
+            <p class="text-slate-400 text-sm leading-relaxed mb-4"><%= service.description.substring(0,100) %>...</p>
+            <ul class="grid grid-cols-2 gap-1 mb-4">
+              <% service.features.slice(0,4).forEach(f => { %>
+                <li class="font-mono text-xs text-slate-500 flex items-center gap-1 truncate">
+                  <span style="color:var(--blue-core)">◈</span> <%= f %>
+                </li>
+              <% }) %>
+            </ul>
+            <div class="flex items-center justify-between mt-4 pt-4 border-t" style="border-color:var(--dark-border)">
+              <span class="font-mono text-xs text-slate-500">VIEW DETAILS</span>
+              <span class="font-mono text-xs" style="color:var(--blue-bright)">→</span>
+            </div>
+          </a>
+          <% }) %>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section id="stats" class="py-24 px-6 border-y" style="border-color:var(--dark-border)">
+    <div class="max-w-7xl mx-auto">
+      <div class="section-line mb-12">
+        <span class="font-mono text-xs tracking-[0.3em]" style="color:var(--blue-core)">BY THE NUMBERS</span>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-10">
+        <div><div class="stat-num">100+</div><div class="font-mono text-xs text-slate-500 tracking-widest mt-2">PROJECTS SHIPPED</div></div>
+        <div><div class="stat-num">30+</div><div class="font-mono text-xs text-slate-500 tracking-widest mt-2">SERVICES OFFERED</div></div>
+        <div><div class="stat-num">99.9%</div><div class="font-mono text-xs text-slate-500 tracking-widest mt-2">UPTIME GUARANTEE</div></div>
+        <div><div class="stat-num">48H</div><div class="font-mono text-xs text-slate-500 tracking-widest mt-2">AVG DELIVERY</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="py-32 px-6 text-center">
+    <div class="max-w-2xl mx-auto">
+      <p class="font-mono text-xs tracking-[0.3em] mb-4" style="color:var(--blue-core)">READY TO BUILD?</p>
+      <h2 class="font-display font-extrabold text-glow mb-6" style="font-size:clamp(2.5rem,6vw,5rem)">LET'S LAUNCH ON SOLANA</h2>
+      <p class="text-slate-400 mb-10 text-lg">Connect your wallet, browse services, and submit your order. We'll reach out within 24 hours.</p>
+      <a href="#services" class="btn-glow px-10 py-4 rounded-sm text-sm inline-block">BROWSE SERVICES →</a>
+    </div>
+  </section>
+
+</div>
+
+<script>
+function filterCat(cat, btn) {
+  document.querySelectorAll('.category-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.category-block').forEach(b => {
+    b.style.display = (cat === 'all' || b.dataset.cat === cat) ? 'block' : 'none';
+  });
+}
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const t = document.querySelector(a.getAttribute('href'));
+    if (t) { e.preventDefault(); t.scrollIntoView({ behavior:'smooth', block:'start' }); }
+  });
+});
+</script>
+
+<%- include('partials/footer') %>

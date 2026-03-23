@@ -1,0 +1,122 @@
+<%- include('partials/header') %>
+
+<div class="content-layer pt-28 pb-24">
+  <div class="max-w-5xl mx-auto px-6">
+
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 font-mono text-xs text-slate-500 mb-10">
+      <a href="/" class="hover:text-white transition-colors">HOME</a>
+      <span>›</span>
+      <a href="/#services" class="hover:text-white transition-colors">SERVICES</a>
+      <span>›</span>
+      <span style="color:var(--blue-pale)"><%= service.name.toUpperCase() %></span>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-12">
+
+      <!-- Left: Service Detail -->
+      <div class="md:col-span-2">
+        <div class="flex items-start gap-4 mb-6">
+          <span class="text-5xl"><%= service.icon %></span>
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="font-mono text-xs tracking-widest" style="color:var(--blue-core)"><%= service.category.toUpperCase() %></span>
+              <% if (service.badge === 'NEW') { %><span class="badge-new text-white">NEW</span><% } %>
+              <% if (service.badge === 'HOT') { %><span class="badge-hot text-white">HOT</span><% } %>
+              <% if (service.badge === 'TEST') { %><span class="badge-test">TEST</span><% } %>
+            </div>
+            <h1 class="font-display font-extrabold text-4xl leading-tight"><%= service.name %></h1>
+          </div>
+        </div>
+
+        <p class="text-slate-300 text-lg leading-relaxed mb-10"><%= service.description %></p>
+
+        <!-- What's Included -->
+        <div class="mb-10">
+          <div class="section-line mb-6">
+            <span class="font-mono text-xs tracking-widest" style="color:var(--blue-core)">WHAT'S INCLUDED</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <% service.features.forEach(f => { %>
+            <div class="flex items-center gap-3 p-3 rounded-sm" style="background:rgba(26,111,255,0.05); border:1px solid var(--dark-border)">
+              <span class="text-lg" style="color:var(--blue-core)">◈</span>
+              <span class="text-sm text-slate-200"><%= f %></span>
+            </div>
+            <% }) %>
+          </div>
+        </div>
+
+        <!-- Process -->
+        <div class="mb-10">
+          <div class="section-line mb-6">
+            <span class="font-mono text-xs tracking-widest" style="color:var(--blue-core)">OUR PROCESS</span>
+          </div>
+          <div class="flex flex-col gap-0">
+            <% const steps = ['Discovery & Scoping','Architecture & Design','Development & Testing','Deployment & Handover']; %>
+            <% steps.forEach((step, i) => { %>
+            <div class="flex gap-4 items-start">
+              <div class="flex flex-col items-center">
+                <div class="timeline-dot mt-1"></div>
+                <% if (i < steps.length - 1) { %><div class="timeline-line"></div><% } %>
+              </div>
+              <div class="pb-6">
+                <div class="font-mono text-xs text-slate-500 mb-1">STEP <%= String(i+1).padStart(2,'0') %></div>
+                <div class="font-display font-semibold text-white"><%= step %></div>
+              </div>
+            </div>
+            <% }) %>
+          </div>
+        </div>
+
+        <!-- Related Services -->
+        <% if (related && related.length > 0) { %>
+        <div>
+          <div class="section-line mb-6">
+            <span class="font-mono text-xs tracking-widest" style="color:var(--blue-core)">OFTEN PAIRED WITH</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <% related.forEach(r => { %>
+            <a href="/services/<%= r.id %>" class="service-card rounded-sm p-4 block">
+              <div class="text-xl mb-2"><%= r.icon %></div>
+              <div class="font-display font-semibold text-sm mb-1"><%= r.name %></div>
+              <div class="font-mono text-xs" style="color:var(--blue-bright)">$<%= r.price %></div>
+            </a>
+            <% }) %>
+          </div>
+        </div>
+        <% } %>
+      </div>
+
+      <!-- Right: Order Panel (sticky) -->
+      <div class="md:col-span-1">
+        <div class="sticky top-24 service-card rounded-sm p-6">
+          <div class="font-mono text-xs text-slate-500 mb-2">STARTING FROM</div>
+          <div class="font-display font-extrabold mb-1" style="font-size:2.5rem; color:var(--blue-bright)">$<%= service.price %></div>
+          <% if (solPrice && solPrice > 0) { %>
+          <div class="font-mono text-xs text-slate-400 mb-6">≈ <%= solCost %> SOL <span class="text-slate-600">@ $<%= Number(solPrice).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) %></span></div>
+          <% } else { %>
+          <div class="mb-6"></div>
+          <% } %>
+
+          <div class="flex flex-col gap-2 mb-6 text-xs font-mono text-slate-500">
+            <div class="flex items-center gap-2"><span style="color:var(--blue-core)">◈</span> Full payment on order placement</div>
+            <div class="flex items-center gap-2"><span style="color:var(--blue-core)">◈</span> SOL payment on Solana Mainnet</div>
+            <div class="flex items-center gap-2"><span style="color:var(--blue-core)">◈</span> Delivery in 48–96 hours</div>
+            <div class="flex items-center gap-2"><span style="color:var(--blue-core)">◈</span> Full documentation included</div>
+          </div>
+
+          <% if (locals.walletAddress) { %>
+            <button onclick="addToCart('<%= service.id %>'); this.textContent='✓ ADDED TO CART'; this.disabled=true;" class="btn-glow w-full py-3 rounded-sm mb-3">ADD TO CART</button>
+            <a href="/cart" class="btn-outline block w-full text-center py-3 rounded-sm">VIEW CART →</a>
+          <% } else { %>
+            <button onclick="openConnectModal()" class="btn-glow w-full py-3 rounded-sm mb-3">CONNECT TO ORDER</button>
+          <% } %>
+
+          <p class="font-mono text-xs text-slate-600 text-center mt-4">Secured on Solana Mainnet</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

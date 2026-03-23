@@ -1,0 +1,114 @@
+<%- include('partials/header') %>
+
+<!-- Lightbox -->
+<div id="lightbox" onclick="closeLightbox()" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.92);cursor:zoom-out;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
+  <img id="lightbox-img" src="" alt="" style="max-width:90vw;max-height:85vh;object-fit:contain;border-radius:4px;" onclick="event.stopPropagation()" />
+  <div id="lightbox-name" class="font-mono text-slate-400" style="font-size:0.75rem;"></div>
+  <button onclick="closeLightbox()" style="position:absolute;top:20px;right:24px;background:none;border:none;color:#aaa;font-size:1.5rem;cursor:pointer;">✕</button>
+</div>
+
+<div class="content-layer pt-28 min-h-screen">
+  <div class="max-w-3xl mx-auto px-6 pb-24">
+    <div class="flex items-center gap-2 font-mono text-xs text-slate-500 mb-8">
+      <a href="/admin" class="hover:text-white">ADMIN</a><span>›</span>
+      <span style="color:var(--blue-pale)"><%= order.id %></span>
+    </div>
+
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <p class="font-mono text-xs tracking-[0.3em] mb-2" style="color:#ffaa00">ORDER DETAIL</p>
+        <h1 class="font-display font-extrabold text-3xl"><%= order.id %></h1>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="status-badge status-<%= order.status %>"><%= order.status.replace('_',' ') %></span>
+        <a href="/orders/<%= order.id %>" class="btn-glow px-4 py-2 rounded-sm text-xs">OPEN CHAT →</a>
+      </div>
+    </div>
+
+    <!-- Info -->
+    <div class="grid grid-cols-2 gap-4 mb-6">
+      <div class="service-card rounded-sm p-4"><div class="font-mono text-xs text-slate-500 mb-1">CLIENT WALLET</div><div class="font-mono text-xs text-slate-200 break-all"><%= order.wallet %></div></div>
+      <div class="service-card rounded-sm p-4"><div class="font-mono text-xs text-slate-500 mb-1">TOTAL</div><div class="font-display font-bold text-xl" style="color:var(--blue-bright)">$<%= order.totalUSD %></div><% if (order.txHash) { %><a href="https://solscan.io/tx/<%= order.txHash %>" target="_blank" class="font-mono text-xs" style="color:var(--blue-bright)">TX ↗</a><% } %></div>
+    </div>
+
+    <!-- Project details -->
+    <% if (order.projectDetails) { %>
+    <div class="service-card rounded-sm p-5 mb-4">
+      <div class="font-mono text-xs text-slate-400 mb-3">PROJECT DETAILS</div>
+      <div class="font-semibold text-white mb-1"><%= order.projectDetails.projectName %></div>
+      <div class="text-sm text-slate-300 leading-relaxed"><%= order.projectDetails.description %></div>
+    </div>
+    <% } %>
+
+    <!-- Attachments — admin can view thumbnail + download all as zip -->
+    <% if (attachments && attachments.length > 0) { %>
+    <div class="service-card rounded-sm p-5 mb-4">
+      <div class="flex items-center justify-between mb-3">
+        <div class="font-mono text-xs text-slate-400">ATTACHMENTS (<%= attachments.length %>)</div>
+        <a href="/orders/<%= order.id %>/attachments/zip" class="btn-glow px-4 py-2 rounded-sm text-xs">⬇ DOWNLOAD ALL ZIP</a>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <% attachments.forEach(att => { %>
+        <% if (att.isImg) { %>
+          <img src="/orders/<%= order.id %>/img/<%= encodeURIComponent(att.filename) %>"
+            alt="<%= att.name %>" title="<%= att.name %>"
+            onclick="openLightbox('/orders/<%= order.id %>/img/<%= encodeURIComponent(att.filename) %>','<%= att.name.replace(/'/g,"\\'") %>')"
+            style="width:72px;height:72px;object-fit:cover;border-radius:4px;cursor:pointer;border:1px solid var(--dark-border);"
+            onerror="this.style.display='none'" />
+        <% } else { %>
+          <div class="flex items-center gap-2 p-2 rounded-sm" style="background:rgba(26,111,255,0.04);border:1px solid var(--dark-border);">
+            <span>📎</span><span class="font-mono text-xs text-slate-300"><%= att.name %></span>
+          </div>
+        <% } %>
+        <% }) %>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- Status update -->
+    <div class="service-card rounded-sm p-5 mb-4">
+      <div class="font-mono text-xs text-slate-500 mb-4">UPDATE STATUS</div>
+      <div class="flex flex-col gap-3">
+        <select id="status-sel" class="font-mono text-xs py-2 px-3 rounded-sm" style="background:var(--dark-bg);border:1px solid var(--dark-border);color:#e8f0ff;">
+          <% ['pending_payment','paid','in_progress','review','delivered','completed','cancelled'].forEach(s => { %>
+            <option value="<%= s %>" <%= order.status===s?'selected':'' %>><%= s.replace('_',' ').toUpperCase() %></option>
+          <% }) %>
+        </select>
+        <input id="status-note" placeholder="Note for client..." class="font-mono text-xs py-2 px-3 rounded-sm" style="background:var(--dark-bg);border:1px solid var(--dark-border);color:#e8f0ff;" />
+        <button onclick="doUpdate()" class="btn-glow py-2 rounded-sm">UPDATE</button>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="service-card rounded-sm p-5">
+      <div class="font-mono text-xs text-slate-500 mb-4">TIMELINE</div>
+      <div class="flex flex-col gap-3">
+        <% order.timeline.slice().reverse().forEach(ev => { %>
+        <div class="flex items-start gap-3">
+          <div class="timeline-dot mt-1"></div>
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="status-badge status-<%= ev.status %>"><%= ev.status.replace('_',' ') %></span>
+              <span class="font-mono text-xs text-slate-500"><%= new Date(ev.at).toLocaleString() %></span>
+            </div>
+            <% if (ev.note) { %><p class="text-xs text-slate-400"><%= ev.note %></p><% } %>
+          </div>
+        </div>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function openLightbox(src,name){const lb=document.getElementById('lightbox');document.getElementById('lightbox-img').src=src;document.getElementById('lightbox-name').textContent=name;lb.style.display='flex';document.body.style.overflow='hidden';}
+function closeLightbox(){document.getElementById('lightbox').style.display='none';document.body.style.overflow='';}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLightbox();});
+async function doUpdate(){
+  const status=document.getElementById('status-sel').value;
+  const note=document.getElementById('status-note').value.trim();
+  try{const res=await fetch('/admin/order/<%= order.id %>/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status,note})});const data=await res.json();if(data.success){showToast('✓ Updated');setTimeout(()=>location.reload(),800);}else showToast('Error: '+data.error);}catch(e){showToast('Network error');}
+}
+</script>
+
+<%- include('partials/footer') %>
