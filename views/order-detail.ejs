@@ -1,5 +1,5 @@
 <%
-function renderMsg(msg, myWallet) {
+function renderMsg(msg, myWallet, orderId) {
   const isMe = msg.senderWallet === myWallet;
   const rc   = 'chat-' + (msg.role || 'client');
   const time = new Date(msg.at).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
@@ -8,24 +8,36 @@ function renderMsg(msg, myWallet) {
 
   let bubble = '';
   if (msg.filename) {
-    const isImg = /\.(jpg|jpeg|png|gif|webp|svg|bmp|tiff)$/i.test(msg.fileName || msg.filename);
-    const imgUrl = `/orders/${msg.orderId || ''}/img/${msg.filename}`;
+    const isImg = /\.(jpg|jpeg|png|gif|webp|svg|bmp|tiff|avif)$/i.test(msg.fileName || msg.filename);
+    const dname = (msg.fileName || msg.filename).replace(/^\d+_/, '');
+    const imgRoute = '/orders/' + orderId + '/img/' + msg.filename;
     if (isImg) {
-      bubble = `<div class="${rc} chat-bubble" style="padding:8px;"><img src="/orders/IMG_PLACEHOLDER/img/${msg.filename}" data-orderid="ORDER_PLACEHOLDER" style="max-width:220px;max-height:200px;border-radius:4px;display:block;cursor:pointer;" onclick="window.open(this.src,'_blank')" onerror="this.style.display='none'" /><div style="font-size:0.6rem;color:#6a7a9a;margin-top:4px;font-family:monospace;">${(msg.fileName||msg.filename).replace(/^\d+_/,'')}</div></div>`;
+      bubble = '<div class="' + rc + ' chat-bubble" style="padding:8px;">'
+        + '<a href="' + imgRoute + '" target="_blank">'
+        + '<img src="' + imgRoute + '" alt="' + dname + '" '
+        + 'style="max-width:220px;max-height:200px;border-radius:4px;display:block;cursor:pointer;" '
+        + 'onerror="this.parentElement.parentElement.innerHTML='<span style=\'color:#ff5566;font-size:0.75rem;\'>Image failed to load</span>'" />'
+        + '</a>'
+        + '<div style="font-size:0.6rem;color:#6a7a9a;margin-top:4px;font-family:monospace;">' + dname + '</div>'
+        + '</div>';
     } else {
-      const dname = (msg.fileName || msg.filename).replace(/^\d+_/,'');
-      bubble = `<div class="${rc} chat-bubble"><a href="/orders/ORDER_PLACEHOLDER/img/${msg.filename}" target="_blank" style="display:flex;align-items:center;gap:8px;color:var(--blue-bright);text-decoration:none;"><span style="font-size:1.2rem;">📎</span><span style="font-family:monospace;font-size:0.75rem;">${dname}</span><span style="font-size:0.6rem;opacity:0.5;">↗</span></a></div>`;
+      bubble = '<div class="' + rc + ' chat-bubble">'
+        + '<a href="' + imgRoute + '" target="_blank" style="display:flex;align-items:center;gap:8px;color:var(--blue-bright);text-decoration:none;">'
+        + '<span style="font-size:1.2rem;">📎</span>'
+        + '<span style="font-family:monospace;font-size:0.75rem;">' + dname + '</span>'
+        + '<span style="font-size:0.6rem;opacity:0.5;">↗</span>'
+        + '</a></div>';
     }
   } else {
     const t = (msg.text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
-    bubble = `<div class="${rc} chat-bubble">${t}</div>`;
+    bubble = '<div class="' + rc + ' chat-bubble">' + t + '</div>';
   }
 
-  return `<div class="flex flex-col gap-1 ${align}" data-msg-id="${msg.id}">
-    <div class="flex items-center gap-2 ${nameRow}" style="font-size:0.7rem;">
-      <span style="color:#6a7a9a;font-family:monospace;">${msg.senderName}</span>
-      <span style="color:#2a3a5a;font-family:monospace;font-size:0.55rem;">${time}</span>
-    </div>${bubble}</div>`;
+  return '<div class="flex flex-col gap-1 ' + align + '" data-msg-id="' + msg.id + '">'
+    + '<div class="flex items-center gap-2 ' + nameRow + '" style="font-size:0.7rem;">'
+    + '<span style="color:#6a7a9a;font-family:monospace;">' + msg.senderName + '</span>'
+    + '<span style="color:#2a3a5a;font-family:monospace;font-size:0.55rem;">' + time + '</span>'
+    + '</div>' + bubble + '</div>';
 }
 %>
 <%- include('partials/header') %>
@@ -193,7 +205,7 @@ function renderMsg(msg, myWallet) {
           <div id="chat-empty" class="text-center font-mono text-xs text-slate-600 mt-10">NO MESSAGES YET</div>
         <% } else { %>
           <% messages.forEach(msg => { %>
-            <%- renderMsg(msg, walletAddress).replace(/ORDER_PLACEHOLDER/g, order.id).replace(/IMG_PLACEHOLDER/g, order.id) %>
+            <%- renderMsg(msg, walletAddress, order.id) %>
           <% }) %>
         <% } %>
       </div>
@@ -208,7 +220,7 @@ function renderMsg(msg, myWallet) {
       <!-- Input -->
       <div class="p-3 flex gap-2 items-end" style="border-top:1px solid var(--dark-border);">
         <button onclick="document.getElementById('chat-file-input').click()" class="btn-outline px-3 py-2 rounded-sm flex-shrink-0 text-sm" title="Attach image">📎</button>
-        <input type="file" id="chat-file-input" accept="image/*,.pdf,.zip,.rar,.doc,.docx,.xls,.xlsx,.psd,.ai,.sketch,.fig,.mp4,.mov,.txt,.csv,.json,.xml" class="hidden" onchange="setChatFile(this.files[0])" />
+        <input type="file" id="chat-file-input" accept="image/*" class="hidden" onchange="setChatFile(this.files[0])" />
         <textarea id="chat-input" rows="1" placeholder="Type a message... (Enter to send, Shift+Enter for newline)"
           class="chat-input-field rounded-sm flex-1 resize-none" style="min-height:40px;max-height:120px;"
           oninput="autoResize(this)"
@@ -325,21 +337,13 @@ async function sendMsg(){
       const up=await fetch('/orders/'+ORDER_ID+'/upload-image',{method:'POST',body:fd});
       const ud=await up.json();
       if(ud.success){
+        // Also send text if any
         const r=await fetch('/orders/'+ORDER_ID+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},
           body:JSON.stringify({text:text||null,filename:ud.filename,fileName:ud.name})});
         const d=await r.json();
-        if(d.success) appendMsg(d.message); else showToast('Error: '+(d.error||'send failed'));
+        if(d.success){ appendMsg(d.message); } else { showToast('Error: '+(d.error||'send failed')); }
       } else {
-        // If not an image, try upload-doc endpoint instead
-        const fd2=new FormData(); fd2.append('file',f);
-        const up2=await fetch('/orders/'+ORDER_ID+'/upload-doc',{method:'POST',body:fd2});
-        const ud2=await up2.json();
-        if(ud2.success){
-          const r=await fetch('/orders/'+ORDER_ID+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({text:text||null,filename:ud2.filename,fileName:ud2.name})});
-          const d=await r.json();
-          if(d.success) appendMsg(d.message); else showToast('Error: '+(d.error||'send failed'));
-        } else { showToast('Upload error: '+(ud2.error||'failed')); }
+        showToast('Upload error: '+(ud.error||'Only image files are supported in chat'));
       }
     } catch(e){ showToast('Upload failed: '+e.message); }
   } else {

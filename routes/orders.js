@@ -24,13 +24,15 @@ try {
     }
   });
 
-  // Chat: images only
+  // Chat: all image types
   uploadImage = multer({
     storage: makeStorage(),
-    limits: { fileSize: 10 * 1024 * 1024 },
+    limits: { fileSize: 20 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
-      const ok = /^image\/(jpeg|jpg|png|gif|webp|svg\+xml|bmp|tiff)$/i.test(file.mimetype)
-              || /\.(jpg|jpeg|png|gif|webp|svg|bmp|tiff)$/i.test(file.originalname);
+      // Accept anything the browser calls an image, plus common extensions
+      const byMime = file.mimetype.startsWith('image/');
+      const byExt  = /\.(jpg|jpeg|png|gif|webp|svg|bmp|tiff|tif|avif|heic|heif|ico|jfif|pjpeg|pjp)$/i.test(file.originalname);
+      const ok = byMime || byExt;
       cb(ok ? null : new Error('IMAGES_ONLY'), ok);
     }
   });
@@ -104,7 +106,9 @@ router.get('/:id/img/:filename', (req, res) => {
     if (!fs.existsSync(filePath)) return res.status(404).send('Not found');
     const ext = path.extname(fname).slice(1).toLowerCase();
     const mime = { jpg:'image/jpeg', jpeg:'image/jpeg', png:'image/png', gif:'image/gif',
-                   webp:'image/webp', svg:'image/svg+xml', bmp:'image/bmp', tiff:'image/tiff' };
+                   webp:'image/webp', svg:'image/svg+xml', bmp:'image/bmp', tiff:'image/tiff',
+                   tif:'image/tiff', avif:'image/avif', heic:'image/heic', heif:'image/heif',
+                   ico:'image/x-icon', jfif:'image/jpeg' };
     const contentType = mime[ext] || 'application/octet-stream';
     res.setHeader('Content-Type', contentType);
     res.setHeader('Cache-Control', 'private, max-age=3600');
