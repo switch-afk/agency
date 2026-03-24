@@ -1,155 +1,124 @@
 <%- include('partials/header') %>
+<div class="layer pt-24 sm:pt-28 min-h-screen">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 pb-16 sm:pb-24">
 
-<div class="content-layer pt-28 min-h-screen">
-  <div class="max-w-7xl mx-auto px-6 pb-24">
-
-    <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10 pb-8 border-b" style="border-color:var(--dark-border)">
-      <div>
-        <p class="font-mono text-xs tracking-[0.3em] mb-2" style="color:var(--blue-core)">MISSION CONTROL</p>
-        <h1 class="font-display font-extrabold text-4xl">DASHBOARD</h1>
-        <p class="font-mono text-xs text-slate-500 mt-2">WALLET: <span style="color:var(--blue-pale)"><%= walletAddress %></span></p>
-      </div>
-      <div class="flex items-center gap-3">
-        <button onclick="toggleCart()" class="btn-outline px-5 py-2 rounded-sm relative">
-          CART
-          <span id="cart-badge" class="absolute -top-1 -right-1 w-4 h-4 rounded-full text-xs flex items-center justify-center font-mono" style="background:var(--blue-core); font-size:0.6rem; display:<%= cart.length > 0 ? 'flex' : 'none' %>"><%= cart.length %></span>
-        </button>
-        <% if (isAdmin) { %>
-          <a href="/admin" class="font-mono text-xs px-4 py-2 rounded-sm" style="background:rgba(255,170,0,0.15); border:1px solid rgba(255,170,0,0.4); color:#ffaa00;">ADMIN PANEL</a>
-        <% } %>
-      </div>
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-dark-border">
+    <div>
+      <p class="font-mono text-xs tracking-[0.3em] mb-1 text-brand-core">MISSION CONTROL</p>
+      <h1 class="font-display font-extrabold text-3xl sm:text-4xl text-white">DASHBOARD</h1>
+      <p class="font-mono text-xs text-slate-500 mt-1 break-all">WALLET: <span class="text-brand-pale"><%= walletAddress %></span></p>
     </div>
+    <div class="flex items-center gap-2 flex-wrap">
+      <button onclick="toggleCart()" class="relative font-mono text-xs px-4 py-2 rounded-sm border border-brand-core text-brand-pale hover:bg-brand-core hover:text-white transition-all">
+        CART
+        <span id="cart-badge" class="absolute -top-1 -right-1 w-4 h-4 rounded-full text-white flex items-center justify-center font-mono bg-brand-core" style="font-size:0.55rem;display:<%= cart.length > 0 ? 'flex' : 'none' %>"><%= cart.length %></span>
+      </button>
+      <% if (isAdmin) { %><a href="/admin" class="font-mono text-xs px-4 py-2 rounded-sm" style="background:rgba(255,170,0,0.15);border:1px solid rgba(255,170,0,0.4);color:#ffaa00">ADMIN PANEL</a><% } %>
+    </div>
+  </div>
 
-    <!-- My Orders -->
-    <% if (orders && orders.length > 0) { %>
-    <div class="mb-14">
-      <div class="section-line mb-6">
-        <span class="font-mono text-xs tracking-widest" style="color:var(--blue-core)">MY ORDERS</span>
-      </div>
-      <div class="flex flex-col gap-4">
-        <% orders.slice().reverse().forEach(order => { %>
-        <a href="/orders/<%= order.id %>" class="service-card rounded-sm p-5 block no-underline cursor-pointer" style="text-decoration:none;">
-          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <div class="flex items-center gap-3 mb-2">
-                <span class="font-mono text-sm font-bold text-white"><%= order.id %></span>
-                <span class="status-badge status-<%= order.status %>"><%= order.status.replace('_',' ') %></span>
-                <span class="font-mono text-xs text-slate-600">CLICK TO OPEN →</span>
-              </div>
-              <div class="text-xs text-slate-500 font-mono">
-                <%= order.items.length %> service<%= order.items.length > 1 ? 's' : '' %> ·
-                $<%= order.totalUSD %> ·
-                <%= new Date(order.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) %>
-              </div>
-              <div class="flex flex-wrap gap-1 mt-2">
-                <% order.items.forEach(item => { %>
-                  <span class="font-mono text-xs px-2 py-1 rounded-sm" style="background:rgba(26,111,255,0.08); color:var(--blue-pale); border:1px solid var(--dark-border)"><%= item.name %></span>
-                <% }) %>
-              </div>
+  <!-- Orders -->
+  <% if (orders && orders.length > 0) { %>
+  <div class="mb-10 sm:mb-14">
+    <div class="sec-line mb-5 sm:mb-6"><span class="font-mono text-xs tracking-widest text-brand-core">MY ORDERS</span></div>
+    <div class="flex flex-col gap-3 sm:gap-4">
+      <% orders.slice().reverse().forEach(order => { %>
+      <a href="/orders/<%= order.id %>" class="card rounded-sm p-4 sm:p-5 block no-underline cursor-pointer">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex-1 min-w-0">
+            <div class="flex flex-wrap items-center gap-2 mb-2">
+              <span class="font-mono text-sm font-bold text-white"><%= order.id %></span>
+              <span class="sb s-<%= order.status %>"><%= order.status.replace(/_/g,' ') %></span>
+              <span class="font-mono text-xs text-slate-600 hidden sm:inline">CLICK TO OPEN →</span>
             </div>
-            <!-- Timeline mini -->
-            <div class="flex flex-col gap-1 min-w-[200px]">
-              <% const stages = [{k:'pending_payment',l:'Placed'},{k:'paid',l:'Paid'},{k:'in_progress',l:'Building'},{k:'review',l:'Review'},{k:'delivered',l:'Delivered'},{k:'completed',l:'Done'}]; %>
-              <% const stageKeys = stages.map(s => s.k); %>
-              <% const currentIdx = stageKeys.indexOf(order.status); %>
-              <div class="flex items-center gap-1">
-                <% stages.forEach((stage, i) => { %>
-                  <div class="flex-1 h-1 rounded-full transition-all" style="background: <%= (order.status === 'cancelled') ? '#ff2244' : (i <= currentIdx ? 'var(--blue-core)' : 'var(--dark-border)') %>"></div>
-                <% }) %>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="font-mono text-xs text-slate-600">PLACED</span>
-                <span class="font-mono text-xs text-slate-600"><%= order.status === 'cancelled' ? 'CANCELLED' : 'DONE' %></span>
-              </div>
-              <% if (order.txHash) { %>
-              <a href="https://solscan.io/tx/<%= order.txHash %>" target="_blank" class="font-mono text-xs mt-1" style="color:var(--blue-bright)">
-                TX: <%= order.txHash.slice(0,8) %>...<%= order.txHash.slice(-6) %> ↗
-              </a>
-              <% } %>
+            <div class="font-mono text-xs text-slate-500 mb-2"><%= order.items.length %> service<%= order.items.length>1?'s':'' %> · $<%= order.totalUSD %> · <%= new Date(order.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) %></div>
+            <div class="flex flex-wrap gap-1">
+              <% order.items.forEach(item => { %>
+                <span class="font-mono text-xs px-2 py-0.5 rounded-sm text-brand-pale border border-dark-border" style="background:rgba(26,111,255,0.08)"><%= item.name %></span>
+              <% }) %>
             </div>
           </div>
-          <!-- Latest note -->
-          <% const latestEvent = order.timeline[order.timeline.length-1]; %>
-          <% if (latestEvent && latestEvent.note) { %>
-          <div class="mt-3 pt-3 border-t text-xs text-slate-400 font-mono flex gap-2" style="border-color:var(--dark-border)">
-            <span style="color:var(--blue-core)">◈ LATEST:</span> <%= latestEvent.note %>
-          </div>
-          <% } %>
-        </a>
-        <% }) %>
-      </div>
-    </div>
-    <% } %>
-
-    <!-- Cart summary -->
-    <% if (cart.length > 0) { %>
-    <div class="mb-10 p-4 flex items-center justify-between rounded-sm" style="background:rgba(26,111,255,0.08); border:1px solid rgba(26,111,255,0.3)">
-      <div class="flex items-center gap-3">
-        <span style="color:var(--blue-bright)">◈</span>
-        <span class="font-mono text-sm text-slate-300"><%= cart.length %> service<%= cart.length > 1 ? 's' : '' %> in cart</span>
-        <span class="font-mono text-xs text-slate-500">— $<%= cart.reduce((s,i)=>s+i.price,0) %> total</span>
-      </div>
-      <a href="/cart" class="btn-glow px-5 py-2 rounded-sm text-sm">CHECKOUT →</a>
-    </div>
-    <% } %>
-
-    <!-- Services to order -->
-    <div class="section-line mb-6">
-      <span class="font-mono text-xs tracking-widest" style="color:var(--blue-core)">BROWSE & ORDER SERVICES</span>
-    </div>
-    <div class="flex flex-wrap gap-2 mb-8">
-      <button class="category-pill active" onclick="filterCat('all',this)">ALL</button>
-      <% Object.keys(categories).forEach(cat => { %>
-        <button class="category-pill" onclick="filterCat('<%= cat %>',this)"><%= cat.toUpperCase() %></button>
-      <% }) %>
-    </div>
-
-    <% Object.entries(categories).forEach(([catName, catServices]) => { %>
-    <div class="category-block mb-14" data-cat="<%= catName %>">
-      <div class="section-line mb-5">
-        <span class="font-mono text-xs tracking-widest text-slate-500"><%= catName.toUpperCase() %></span>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        <% catServices.forEach(service => { %>
-        <% const inCart = cart.some(c => c.id === service.id); %>
-        <div class="service-card rounded-sm p-5" style="<%= inCart ? 'border-color:rgba(26,111,255,0.4)' : '' %>">
-          <div class="flex items-start justify-between mb-3">
-            <span class="text-2xl"><%= service.icon %></span>
-            <div class="flex items-center gap-2">
-              <% if (service.badge === 'NEW') { %><span class="badge-new text-white">NEW</span><% } %>
-              <% if (service.badge === 'HOT') { %><span class="badge-hot text-white">HOT</span><% } %>
-              <% if (service.badge === 'TEST') { %><span class="badge-test">TEST</span><% } %>
-              <span class="font-display font-bold text-lg" style="color:var(--blue-bright)">$<%= service.price %></span>
+          <!-- Progress bar -->
+          <div class="sm:min-w-[180px]">
+            <% const stages=[{k:'pending_payment'},{k:'paid'},{k:'in_progress'},{k:'review'},{k:'delivered'},{k:'completed'}]; %>
+            <% const ci=stages.findIndex(s=>s.k===order.status); %>
+            <div class="flex items-center gap-0.5 mb-1">
+              <% stages.forEach((s,i)=>{ %>
+                <div class="flex-1 h-1 rounded-full" style="background:<%= order.status==='cancelled'?'#ff2244':(i<=ci?'#1a6fff':'#0f1e3a') %>"></div>
+              <% }) %>
             </div>
-          </div>
-          <h3 class="font-display font-bold text-base mb-1 leading-tight"><%= service.name %></h3>
-          <p class="text-slate-500 text-xs leading-relaxed mb-4"><%= service.description.substring(0,90) %>...</p>
-          <div class="flex gap-2">
-            <a href="/services/<%= service.id %>" class="btn-outline px-3 py-2 rounded-sm text-xs flex-shrink-0">DETAILS</a>
-            <% if (inCart) { %>
-              <div class="btn-outline flex-1 py-2 text-center text-xs rounded-sm" style="color:var(--blue-bright); cursor:default">✓ IN CART</div>
-            <% } else { %>
-              <button onclick="addToCart('<%= service.id %>')" class="btn-glow flex-1 py-2 rounded-sm text-xs">ADD TO CART</button>
-            <% } %>
+            <div class="flex justify-between"><span class="font-mono text-xs text-slate-600">PLACED</span><span class="font-mono text-xs text-slate-600"><%= order.status==='cancelled'?'CANCELLED':'DONE' %></span></div>
           </div>
         </div>
-        <% }) %>
-      </div>
+        <% const le=order.timeline[order.timeline.length-1]; %>
+        <% if(le&&le.note){ %>
+          <div class="mt-3 pt-3 border-t border-dark-border font-mono text-xs text-slate-400 flex gap-2"><span class="text-brand-core">◈ LATEST:</span><%= le.note %></div>
+        <% } %>
+      </a>
+      <% }) %>
     </div>
-    <% }) %>
-
   </div>
-</div>
+  <% } %>
 
+  <!-- Cart bar -->
+  <% if (cart.length > 0) { %>
+  <div class="mb-8 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-sm" style="background:rgba(26,111,255,0.08);border:1px solid rgba(26,111,255,0.3)">
+    <div class="flex items-center gap-2 flex-wrap">
+      <span class="text-brand-bright">◈</span>
+      <span class="font-mono text-sm text-slate-300"><%= cart.length %> service<%= cart.length>1?'s':'' %> in cart</span>
+      <span class="font-mono text-xs text-slate-500">— $<%= cart.reduce((s,i)=>s+i.price,0) %> total</span>
+    </div>
+    <a href="/cart" class="font-mono text-xs px-5 py-2 rounded-sm text-white flex-shrink-0" style="background:#1a6fff">CHECKOUT →</a>
+  </div>
+  <% } %>
+
+  <!-- Browse services -->
+  <div class="sec-line mb-5"><span class="font-mono text-xs tracking-widest text-brand-core">BROWSE & ORDER SERVICES</span></div>
+  <div class="flex flex-wrap gap-2 mb-7 overflow-x-auto pb-1">
+    <button class="cpill active" onclick="filterCat('all',this)">ALL</button>
+    <% Object.keys(categories).forEach(cat => { %>
+      <button class="cpill" onclick="filterCat('<%= cat %>',this)"><%= cat.toUpperCase() %></button>
+    <% }) %>
+  </div>
+
+  <% Object.entries(categories).forEach(([catName, catServices]) => { %>
+  <div class="category-block mb-10 sm:mb-14" data-cat="<%= catName %>">
+    <div class="sec-line mb-4 sm:mb-5"><span class="font-mono text-xs tracking-widest text-slate-500"><%= catName.toUpperCase() %></span></div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+      <% catServices.forEach(service => { %>
+      <% const inCart=cart.some(c=>c.id===service.id); %>
+      <div class="card rounded-sm p-4 sm:p-5" style="<%= inCart?'border-color:rgba(26,111,255,0.4)':'' %>">
+        <div class="flex items-start justify-between mb-3">
+          <span class="text-xl sm:text-2xl"><%= service.icon %></span>
+          <div class="flex items-center gap-2 flex-wrap justify-end">
+            <% if (service.badge==='NEW') { %><span class="badge-new">NEW</span><% } %>
+            <% if (service.badge==='HOT') { %><span class="badge-hot">HOT</span><% } %>
+            <% if (service.badge==='TEST') { %><span class="badge-test">TEST</span><% } %>
+            <span class="font-display font-bold text-base sm:text-lg text-brand-bright">$<%= service.price %></span>
+          </div>
+        </div>
+        <h3 class="font-display font-bold text-sm sm:text-base text-white mb-1 leading-tight"><%= service.name %></h3>
+        <p class="text-slate-500 text-xs leading-relaxed mb-4"><%= service.description.substring(0,90) %>...</p>
+        <div class="flex gap-2">
+          <a href="/services/<%= service.id %>" class="font-mono text-xs px-3 py-2 rounded-sm flex-shrink-0 border border-brand-core text-brand-pale hover:bg-brand-core hover:text-white transition-all">DETAILS</a>
+          <% if (inCart) { %>
+            <div class="flex-1 py-2 text-center font-mono text-xs rounded-sm border border-dark-border text-brand-bright" style="cursor:default">IN CART</div>
+          <% } else { %>
+            <button onclick="addToCart('<%= service.id %>')" class="flex-1 py-2 rounded-sm font-mono text-xs text-white transition-all hover:opacity-90" style="background:#1a6fff">ADD TO CART</button>
+          <% } %>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+  </div>
+  <% }) %>
+</div>
+</div>
 <script>
-function filterCat(cat, btn) {
-  document.querySelectorAll('.category-pill').forEach(p => p.classList.remove('active'));
+function filterCat(cat,btn){
+  document.querySelectorAll('.cpill').forEach(p=>p.classList.remove('active'));
   btn.classList.add('active');
-  document.querySelectorAll('.category-block').forEach(b => {
-    b.style.display = (cat === 'all' || b.dataset.cat === cat) ? 'block' : 'none';
-  });
+  document.querySelectorAll('.category-block').forEach(b=>{b.style.display=(cat==='all'||b.dataset.cat===cat)?'block':'none';});
 }
 </script>
-
 <%- include('partials/footer') %>

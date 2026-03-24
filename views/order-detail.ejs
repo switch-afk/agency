@@ -11,7 +11,7 @@
 .dz:hover,.dz.over{border-color:var(--blue-core);}
 </style>
 
-<div class="content-layer pt-28 min-h-screen">
+<div class="layer pt-28 min-h-screen">
 <div class="max-w-5xl mx-auto px-6 pb-24">
 
   <div class="flex items-center gap-2 mb-8" style="font-family:monospace;font-size:0.7rem;color:#4a5a7a;">
@@ -37,7 +37,7 @@
   <div class="md:col-span-2 flex flex-col gap-5">
 
     <!-- Services -->
-    <div class="service-card rounded-sm p-5">
+    <div class="card rounded-sm p-5">
       <h3 class="font-mono text-xs tracking-widest text-slate-400 mb-4">SERVICES ORDERED</h3>
       <% order.items.forEach(function(item){ %>
       <div class="flex justify-between items-center py-2 border-b last:border-0" style="border-color:var(--dark-border)">
@@ -53,7 +53,7 @@
 
     <!-- Project Details (client) -->
     <% if (isClient) { %>
-    <div class="service-card rounded-sm p-5">
+    <div class="card rounded-sm p-5">
       <div class="flex items-center justify-between mb-4">
         <h3 class="font-mono text-xs tracking-widest text-slate-400">PROJECT DETAILS</h3>
         <% if (order.projectDetails) { %>
@@ -72,11 +72,11 @@
       <form id="det-form" class="<%= order.projectDetails ? 'hidden' : '' %> flex flex-col gap-4" onsubmit="submitDetails(event)">
         <div>
           <label class="font-mono text-xs text-slate-500 block mb-2">PROJECT NAME *</label>
-          <input name="projectName" required value="<%= order.projectDetails ? order.projectDetails.projectName : '' %>" placeholder="Your project name..." class="ci rounded-sm" />
+          <input name="projectName" required value="<%= order.projectDetails ? order.projectDetails.projectName : '' %>" placeholder="Your project name..." class="field" />
         </div>
         <div>
           <label class="font-mono text-xs text-slate-500 block mb-2">DESCRIPTION *</label>
-          <textarea name="description" required rows="4" class="ci rounded-sm" style="resize:none;" placeholder="Describe what you want built..."><%= order.projectDetails ? order.projectDetails.description : '' %></textarea>
+          <textarea name="description" required rows="4" class="field" style="resize:none;" placeholder="Describe what you want built..."><%= order.projectDetails ? order.projectDetails.description : '' %></textarea>
         </div>
         <div id="det-status" class="hidden font-mono text-xs p-3 rounded-sm"></div>
         <button type="submit" id="det-btn" class="btn-glow py-3 rounded-sm">SUBMIT PROJECT DETAILS</button>
@@ -86,7 +86,7 @@
 
     <!-- Project Details (admin/dev read-only) -->
     <% if ((isAdmin||isDev) && order.projectDetails) { %>
-    <div class="service-card rounded-sm p-5">
+    <div class="card rounded-sm p-5">
       <h3 class="font-mono text-xs tracking-widest text-slate-400 mb-4">PROJECT DETAILS</h3>
       <div class="flex flex-col gap-2 text-sm">
         <div><span class="font-mono text-xs text-slate-500">PROJECT: </span><span class="text-white font-semibold"><%= order.projectDetails.projectName %></span></div>
@@ -96,7 +96,7 @@
     <% } %>
 
     <!-- Attachments + Upload (always visible to client/admin/dev) -->
-    <div class="service-card rounded-sm p-5">
+    <div class="card rounded-sm p-5">
       <div class="flex items-center justify-between mb-4">
         <h3 class="font-mono text-xs tracking-widest text-slate-400">
           ATTACHMENTS<% if (attachments && attachments.length > 0) { %> (<%= attachments.length %>)<% } %>
@@ -128,7 +128,7 @@
       <!-- Multi-file upload (client only) -->
       <% if (isClient) { %>
       <div>
-        <div class="dz" id="att-dz"
+        <div class="dropzone" id="att-dz"
           onclick="document.getElementById('att-fi').click()"
           ondragover="event.preventDefault();this.classList.add('over')"
           ondragleave="this.classList.remove('over')"
@@ -145,7 +145,7 @@
     </div>
 
     <!-- Chat (NO attach button) -->
-    <div class="service-card rounded-sm flex flex-col" style="height:520px;">
+    <div class="card rounded-sm flex flex-col" style="height:520px;">
       <div class="p-4 border-b flex items-center justify-between" style="border-color:var(--dark-border);">
         <h3 class="font-mono text-xs tracking-widest text-slate-400">PROJECT CHAT</h3>
         <% if (order.developerName) { %>
@@ -186,7 +186,7 @@
 
       <div class="p-3 flex gap-2 items-end" style="border-top:1px solid var(--dark-border);">
         <textarea id="chat-in" rows="1" placeholder="Type a message..."
-          class="ci rounded-sm flex-1" style="resize:none;min-height:40px;max-height:120px;"
+          class="field flex-1" style="resize:none;min-height:40px;max-height:120px;"
           oninput="autoResize(this)"
           onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"></textarea>
         <button onclick="sendMsg()" class="btn-glow px-4 py-2 rounded-sm flex-shrink-0">SEND</button>
@@ -198,7 +198,7 @@
   <!-- Sidebar -->
   <div class="flex flex-col gap-4">
     <% if (order.developerName) { %>
-    <div class="service-card rounded-sm p-4">
+    <div class="card rounded-sm p-4">
       <div class="font-mono text-xs text-slate-500 mb-2">DEVELOPER</div>
       <div class="flex items-center gap-2">
         <span class="w-2 h-2 rounded-full" style="background:#00ff88;box-shadow:0 0 6px #00ff88;"></span>
@@ -207,7 +207,7 @@
     </div>
     <% } %>
 
-    <div class="service-card rounded-sm p-4">
+    <div class="card rounded-sm p-4">
       <div class="font-mono text-xs text-slate-500 mb-4">PROGRESS</div>
       <%
         var stages = [
@@ -233,7 +233,7 @@
       </div>
     </div>
 
-    <div class="service-card rounded-sm p-4">
+    <div class="card rounded-sm p-4">
       <div class="font-mono text-xs text-slate-500 mb-3">TIMELINE</div>
       <div class="flex flex-col gap-3" style="max-height:300px;overflow-y:auto;">
         <% var tl = order.timeline.slice().reverse(); %>

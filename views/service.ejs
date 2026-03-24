@@ -1,122 +1,100 @@
 <%- include('partials/header') %>
+<div class="layer pt-24 sm:pt-28 pb-16 sm:pb-24">
+<div class="max-w-5xl mx-auto px-4 sm:px-6">
+  <div class="flex items-center gap-2 font-mono text-xs text-slate-500 mb-8 sm:mb-10">
+    <a href="/" class="hover:text-white transition-colors">HOME</a><span>›</span>
+    <a href="/#services" class="hover:text-white transition-colors">SERVICES</a><span>›</span>
+    <span class="text-brand-pale truncate"><%= service.name.toUpperCase() %></span>
+  </div>
 
-<div class="content-layer pt-28 pb-24">
-  <div class="max-w-5xl mx-auto px-6">
-
-    <!-- Breadcrumb -->
-    <div class="flex items-center gap-2 font-mono text-xs text-slate-500 mb-10">
-      <a href="/" class="hover:text-white transition-colors">HOME</a>
-      <span>›</span>
-      <a href="/#services" class="hover:text-white transition-colors">SERVICES</a>
-      <span>›</span>
-      <span style="color:var(--blue-pale)"><%= service.name.toUpperCase() %></span>
-    </div>
-
-    <div class="grid md:grid-cols-3 gap-12">
-
-      <!-- Left: Service Detail -->
-      <div class="md:col-span-2">
-        <div class="flex items-start gap-4 mb-6">
-          <span class="text-5xl"><%= service.icon %></span>
-          <div>
-            <div class="flex items-center gap-2 mb-2">
-              <span class="font-mono text-xs tracking-widest" style="color:var(--blue-core)"><%= service.category.toUpperCase() %></span>
-              <% if (service.badge === 'NEW') { %><span class="badge-new text-white">NEW</span><% } %>
-              <% if (service.badge === 'HOT') { %><span class="badge-hot text-white">HOT</span><% } %>
-              <% if (service.badge === 'TEST') { %><span class="badge-test">TEST</span><% } %>
-            </div>
-            <h1 class="font-display font-extrabold text-4xl leading-tight"><%= service.name %></h1>
-          </div>
-        </div>
-
-        <p class="text-slate-300 text-lg leading-relaxed mb-10"><%= service.description %></p>
-
-        <!-- What's Included -->
-        <div class="mb-10">
-          <div class="section-line mb-6">
-            <span class="font-mono text-xs tracking-widest" style="color:var(--blue-core)">WHAT'S INCLUDED</span>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <% service.features.forEach(f => { %>
-            <div class="flex items-center gap-3 p-3 rounded-sm" style="background:rgba(26,111,255,0.05); border:1px solid var(--dark-border)">
-              <span class="text-lg" style="color:var(--blue-core)">◈</span>
-              <span class="text-sm text-slate-200"><%= f %></span>
-            </div>
-            <% }) %>
-          </div>
-        </div>
-
-        <!-- Process -->
-        <div class="mb-10">
-          <div class="section-line mb-6">
-            <span class="font-mono text-xs tracking-widest" style="color:var(--blue-core)">OUR PROCESS</span>
-          </div>
-          <div class="flex flex-col gap-0">
-            <% const steps = ['Discovery & Scoping','Architecture & Design','Development & Testing','Deployment & Handover']; %>
-            <% steps.forEach((step, i) => { %>
-            <div class="flex gap-4 items-start">
-              <div class="flex flex-col items-center">
-                <div class="timeline-dot mt-1"></div>
-                <% if (i < steps.length - 1) { %><div class="timeline-line"></div><% } %>
-              </div>
-              <div class="pb-6">
-                <div class="font-mono text-xs text-slate-500 mb-1">STEP <%= String(i+1).padStart(2,'0') %></div>
-                <div class="font-display font-semibold text-white"><%= step %></div>
-              </div>
-            </div>
-            <% }) %>
-          </div>
-        </div>
-
-        <!-- Related Services -->
-        <% if (related && related.length > 0) { %>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12">
+    <div class="md:col-span-2">
+      <div class="flex items-start gap-4 mb-6">
+        <span class="text-4xl sm:text-5xl flex-shrink-0"><%= service.icon %></span>
         <div>
-          <div class="section-line mb-6">
-            <span class="font-mono text-xs tracking-widest" style="color:var(--blue-core)">OFTEN PAIRED WITH</span>
+          <div class="flex flex-wrap items-center gap-2 mb-2">
+            <span class="font-mono text-xs tracking-widest text-brand-core"><%= service.category.toUpperCase() %></span>
+            <% if (service.badge==='NEW') { %><span class="badge-new">NEW</span><% } %>
+            <% if (service.badge==='HOT') { %><span class="badge-hot">HOT</span><% } %>
+            <% if (service.badge==='TEST') { %><span class="badge-test">TEST</span><% } %>
           </div>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <% related.forEach(r => { %>
-            <a href="/services/<%= r.id %>" class="service-card rounded-sm p-4 block">
-              <div class="text-xl mb-2"><%= r.icon %></div>
-              <div class="font-display font-semibold text-sm mb-1"><%= r.name %></div>
-              <div class="font-mono text-xs" style="color:var(--blue-bright)">$<%= r.price %></div>
-            </a>
-            <% }) %>
-          </div>
+          <h1 class="font-display font-extrabold text-2xl sm:text-4xl text-white leading-tight"><%= service.name %></h1>
         </div>
-        <% } %>
       </div>
 
-      <!-- Right: Order Panel (sticky) -->
-      <div class="md:col-span-1">
-        <div class="sticky top-24 service-card rounded-sm p-6">
-          <div class="font-mono text-xs text-slate-500 mb-2">STARTING FROM</div>
-          <div class="font-display font-extrabold mb-1" style="font-size:2.5rem; color:var(--blue-bright)">$<%= service.price %></div>
-          <% if (solPrice && solPrice > 0) { %>
-          <div class="font-mono text-xs text-slate-400 mb-6">≈ <%= solCost %> SOL <span class="text-slate-600">@ $<%= Number(solPrice).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) %></span></div>
-          <% } else { %>
-          <div class="mb-6"></div>
-          <% } %>
+      <p class="text-slate-300 text-base sm:text-lg leading-relaxed mb-8 sm:mb-10"><%= service.description %></p>
 
-          <div class="flex flex-col gap-2 mb-6 text-xs font-mono text-slate-500">
-            <div class="flex items-center gap-2"><span style="color:var(--blue-core)">◈</span> Full payment on order placement</div>
-            <div class="flex items-center gap-2"><span style="color:var(--blue-core)">◈</span> SOL payment on Solana Mainnet</div>
-            <div class="flex items-center gap-2"><span style="color:var(--blue-core)">◈</span> Delivery in 48–96 hours</div>
-            <div class="flex items-center gap-2"><span style="color:var(--blue-core)">◈</span> Full documentation included</div>
+      <div class="mb-8 sm:mb-10">
+        <div class="sec-line mb-5 sm:mb-6"><span class="font-mono text-xs tracking-widest text-brand-core">WHAT'S INCLUDED</span></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <% service.features.forEach(f => { %>
+          <div class="flex items-center gap-3 p-3 rounded-sm border border-dark-border" style="background:rgba(26,111,255,0.05)">
+            <span class="text-base text-brand-core flex-shrink-0">◈</span>
+            <span class="text-sm text-slate-200"><%= f %></span>
           </div>
-
-          <% if (locals.walletAddress) { %>
-            <button onclick="addToCart('<%= service.id %>'); this.textContent='✓ ADDED TO CART'; this.disabled=true;" class="btn-glow w-full py-3 rounded-sm mb-3">ADD TO CART</button>
-            <a href="/cart" class="btn-outline block w-full text-center py-3 rounded-sm">VIEW CART →</a>
-          <% } else { %>
-            <button onclick="openConnectModal()" class="btn-glow w-full py-3 rounded-sm mb-3">CONNECT TO ORDER</button>
-          <% } %>
-
-          <p class="font-mono text-xs text-slate-600 text-center mt-4">Secured on Solana Mainnet</p>
+          <% }) %>
         </div>
+      </div>
+
+      <div class="mb-8 sm:mb-10">
+        <div class="sec-line mb-5 sm:mb-6"><span class="font-mono text-xs tracking-widest text-brand-core">OUR PROCESS</span></div>
+        <% const steps=['Discovery & Scoping','Architecture & Design','Development & Testing','Deployment & Handover']; %>
+        <div class="flex flex-col gap-0">
+          <% steps.forEach((step,i)=>{ %>
+          <div class="flex gap-4 items-start">
+            <div class="flex flex-col items-center">
+              <div class="w-2.5 h-2.5 rounded-full mt-1 flex-shrink-0" style="background:#1a6fff;box-shadow:0 0 6px rgba(26,111,255,0.6)"></div>
+              <% if(i<steps.length-1){ %><div class="w-px flex-1 my-1" style="background:linear-gradient(180deg,#1a6fff,transparent);min-height:24px"></div><% } %>
+            </div>
+            <div class="pb-5">
+              <div class="font-mono text-xs text-slate-500 mb-0.5">STEP <%= String(i+1).padStart(2,'0') %></div>
+              <div class="font-display font-semibold text-white"><%= step %></div>
+            </div>
+          </div>
+          <% }) %>
+        </div>
+      </div>
+
+      <% if (related && related.length > 0) { %>
+      <div>
+        <div class="sec-line mb-5 sm:mb-6"><span class="font-mono text-xs tracking-widest text-brand-core">OFTEN PAIRED WITH</span></div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          <% related.forEach(r => { %>
+          <a href="/services/<%= r.id %>" class="card rounded-sm p-4 block no-underline">
+            <div class="text-xl mb-2"><%= r.icon %></div>
+            <div class="font-display font-semibold text-sm text-white mb-1"><%= r.name %></div>
+            <div class="font-mono text-xs text-brand-bright">$<%= r.price %></div>
+          </a>
+          <% }) %>
+        </div>
+      </div>
+      <% } %>
+    </div>
+
+    <!-- Order panel -->
+    <div class="md:col-span-1">
+      <div class="card rounded-sm p-5 sm:p-6 md:sticky md:top-24">
+        <div class="font-mono text-xs text-slate-500 mb-1">STARTING FROM</div>
+        <div class="font-display font-extrabold text-brand-bright mb-1" style="font-size:2.5rem"><%= service.price===0?'FREE':'$'+service.price %></div>
+        <% if (solPrice && solPrice > 0 && service.price > 0) { %>
+        <div class="font-mono text-xs text-slate-400 mb-5">≈ <%= solCost %> SOL <span class="text-slate-600">@ $<%= Number(solPrice).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) %></span></div>
+        <% } else { %><div class="mb-5"></div><% } %>
+        <div class="flex flex-col gap-2 mb-5 font-mono text-xs text-slate-500">
+          <div class="flex items-center gap-2"><span class="text-brand-core">◈</span> Full payment on order</div>
+          <div class="flex items-center gap-2"><span class="text-brand-core">◈</span> SOL on Solana Mainnet</div>
+          <div class="flex items-center gap-2"><span class="text-brand-core">◈</span> 48–96 hour delivery</div>
+          <div class="flex items-center gap-2"><span class="text-brand-core">◈</span> Full documentation included</div>
+        </div>
+        <% if (locals.walletAddress) { %>
+          <button onclick="addToCart('<%= service.id %>');this.textContent='IN CART';this.disabled=true;" class="w-full font-mono text-xs py-3 rounded-sm text-white mb-3 transition-all hover:opacity-90" style="background:#1a6fff">ADD TO CART</button>
+          <a href="/cart" class="block w-full text-center font-mono text-xs py-3 rounded-sm border border-brand-core text-brand-pale hover:bg-brand-core hover:text-white transition-all">VIEW CART →</a>
+        <% } else { %>
+          <button onclick="openConnectModal()" class="w-full font-mono text-xs py-3 rounded-sm text-white mb-3" style="background:#1a6fff">CONNECT TO ORDER</button>
+        <% } %>
+        <p class="font-mono text-xs text-slate-600 text-center mt-4">Secured on Solana Mainnet</p>
       </div>
     </div>
   </div>
 </div>
-
+</div>
 <%- include('partials/footer') %>
